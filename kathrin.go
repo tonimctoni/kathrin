@@ -206,6 +206,19 @@ func (u *Users) remove_reservation(name string, reservation Reservation) error{
     return nil
 }
 
+func (u *Users) get_reservations_on_day(reservation_day Reservation) [24]string{
+    u.lock.RLock()
+    defer u.lock.RUnlock()
+
+    ret:=[24]string{}
+    for i:=0; i<24; i++{
+        reservation_day.Slot=i
+        ret[i]=u.reservation_to_user[reservation_day]
+    }
+
+    return ret
+}
+
 
 // func fun(){
 //     users:=[]User{
@@ -227,15 +240,10 @@ func (u *Users) remove_reservation(name string, reservation Reservation) error{
 // }
 
 
-// TODO: see if i can use Reservation as map key
 // TODO: always iterate over index range when changing stuff
-// TODO: make sure data is correct when adding
 // TODO: Look at every function and make sure the map is updated correctly
 // TODO: syncrhonize it all (channels maybe?) (send pointer for return values?)
 // TODO: when a user is removed, all his reservations should be removed from map
-// TODO: add map and lock to struct Users
-// TODO: search how deletion works for maps and fix remove_reservation
-// TODO: search "iterate over references golang"
 // strings.ToLower("Gopher")
 // delete(m, "route")
 func main() {
@@ -250,7 +258,7 @@ func main() {
     // users.add_reservation("502", Reservation{2017, 8, 28, 10}, users.get_reservation_string_user_name_map())
     // fmt.Println(users)
     // users.to_file("asd.json")
-    return
+    // return
 
     // b, err := json.Marshal(logins)
     // if err!=nil{
@@ -290,20 +298,10 @@ func main() {
 
 
     bootstrap_files:=[]string{
-        "bootstrap/css/bootstrap.css",
-        "bootstrap/css/bootstrap-reboot.min.css",
-        "bootstrap/css/bootstrap-reboot.min.css.map",
-        "bootstrap/css/bootstrap-grid.css.map",
-        "bootstrap/css/bootstrap-reboot.css",
-        "bootstrap/css/bootstrap.min.css.map",
-        "bootstrap/css/bootstrap-grid.min.css.map",
         "bootstrap/css/bootstrap.min.css",
-        "bootstrap/css/bootstrap-grid.css",
-        "bootstrap/css/bootstrap-grid.min.css",
-        "bootstrap/css/bootstrap.css.map",
-        "bootstrap/css/bootstrap-reboot.css.map",
-        "bootstrap/js/bootstrap.min.js",
-        "bootstrap/js/bootstrap.js",
+        "bootstrap/fonts/glyphicons-halflings-regular.ttf",
+        "bootstrap/fonts/glyphicons-halflings-regular.woff",
+        "bootstrap/fonts/glyphicons-halflings-regular.woff2",
     }
 
     mux:=http.NewServeMux()
@@ -323,9 +321,10 @@ func main() {
             }
         }()
 
+        bootstrap_file_copy:=bootstrap_file
         mux.HandleFunc(bootstrap_file_address, func (w http.ResponseWriter, r *http.Request){
             w.Header().Set("Content-Type", mimetype)
-            http.ServeFile(w, r, bootstrap_file)
+            http.ServeFile(w, r, bootstrap_file_copy)
         })
     }
 
@@ -366,8 +365,11 @@ func main() {
             now:=time.Now().AddDate(0,0,days_in_the_future)
             year, month, day:=now.Date()
             weekday:=now.Weekday()
-            to_send.Date=fmt.Sprintf("%s, %d of %s of %d", weekday.String(), day, month.String(), year)
-            fmt.Println(to_send)
+            // to_send.Date=fmt.Sprintf("%s, %d of %s of %d", weekday.String(), day, month.String(), year)
+            to_send.Date=fmt.Sprintf("%s, %d of %s", weekday.String(), day, month.String())
+            entries:=users.get_reservations_on_day(Reservation{year, int(month), day, 0})
+            copy(to_send.Entries[:], entries[:])
+            // fmt.Println(to_send)
 
             json_entries_data,err:=json.Marshal(to_send)
             if err!=nil{
@@ -377,25 +379,6 @@ func main() {
             }
 
             w.Write(json_entries_data)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         } else {
             http.Error(w, "Request must be POST.", http.StatusBadRequest)
