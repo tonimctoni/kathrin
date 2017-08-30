@@ -1,6 +1,6 @@
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick)
+import Html.Events exposing (onClick, onInput)
 import Http
 import Json.Decode as Decode
 import Json.Encode as Encode
@@ -23,25 +23,61 @@ send_get_entries_request days_in_the_future =
     Http.send EntriesArrived (Http.post "/get_entries" (body) entries_decoder)
 
 
+send_add_entry_request: Model -> Cmd Msg
+send_add_entry_request model =
+  case model.active_entry of
+    Nothing -> Cmd.none
+    Just active_entry ->
+      let
+        body =
+          [ ("days_in_the_future", Encode.int model.days_in_the_future)
+          , ("date", Encode.string model.entries.date)
+          , ("active_entry", Encode.int active_entry)
+          , ("name", Encode.string model.name)
+          , ("password", Encode.string model.password)
+          ]
+          |> Encode.object
+          |> Http.jsonBody
 
+        return_code_decoder = Decode.map ReturnCode
+          (Decode.field "Return_code" Decode.int)
+      in
+        Http.send ReturnCodeArrived (Http.post "/add_entry" (body) return_code_decoder)
 
-
+type alias ReturnCode =
+  { return_code: Int
+  }
 
 type alias Entries =
   { date: String
   , entries : Array.Array String
   }
 
-type alias Model = {days_in_the_future : Int, entries : Entries, error : String}
+type alias Model =
+  { days_in_the_future: Int
+  , entries: Entries
+  , active_entry: Maybe Int
+  , name: String
+  , password: String
+  , error: String
+  , return_code: Int}
 
 
 
 init: (Model, Cmd Msg)
-init = (Model 0 (Entries "" Array.empty) "", send_get_entries_request 0)
+init = (Model 0 (Entries "" Array.empty) Nothing "" "" "" 0, send_get_entries_request 0)
 
 
 
-type Msg = NextDay | PreviousDay | EntriesArrived (Result Http.Error Entries)
+type Msg
+  = NextDay
+  | PreviousDay
+  | EntriesArrived (Result Http.Error Entries)
+  | ShowEntryForm (Maybe Int)
+  | SetName String
+  | SetPassword String
+  | SendAddEntryRequest
+  | ReturnCodeArrived (Result Http.Error ReturnCode)
 
 
 nav_bar: Html Msg
@@ -74,33 +110,33 @@ date_row model =
 
 
 
+
 user_row : Model -> Int -> Html Msg
 user_row model i =
   let
-    entry_row_free i =
-      div [class "row"]
-      [ p [class "bg-info text-white", style [("margin", ".1cm")]]
-        [ p [] [text ((toString i)++" - "++(toString (i+1))++":")]
-        --, text "_"
-        , button [style [("margin-left", ".5cm")]] [span [class "glyphicon glyphicon-pencil"] []]
-        ]
-      ]
-
-    entry_row_occ i name =
-      div [class "row"]
-      [ p [class "bg-success text-white", style [("margin", ".1cm")]]
-        [ p [] [text ((toString i)++" - "++(toString (i+1))++":")]
-        , strong [] [text name]
-        , button [style [("margin-left", ".5cm")]] [span [class "glyphicon glyphicon-remove"] []]
-        ]
-      ]
-
-    entry_row_error = div [class "row"] [p [class "bg-danger text-white", style [("margin", ".1cm")]] [text "ERROR"]]
+    add_entry_form: Model -> Html Msg
+    add_entry_form model =
+      div [] [input [type_ "text", placeholder "Name", onInput SetName] [], input [type_ "password", placeholder "Password", onInput SetPassword] [], button [onClick SendAddEntryRequest] [text "OK"]]
   in
-  case Array.get i model.entries.entries of
-    Just "" -> entry_row_free i
-    Just name -> entry_row_occ i name
-    Nothing -> entry_row_error
+    case Array.get i model.entries.entries of
+      Just "" -> 
+        div [class "row"]
+        [ p [class "bg-info text-white", style [("margin", ".1cm")]]
+          [ p [] [text ((toString i)++" - "++(toString (i+1))++":")]
+          , button [style [("margin-left", ".5cm")], onClick (if (model.active_entry==Just i) then (ShowEntryForm Nothing) else (ShowEntryForm (Just i)))] [span [class "glyphicon glyphicon-pencil"] []]
+          , if model.active_entry==(Just i) then (add_entry_form model) else (div [] [])
+          ]
+        ]
+      Just name ->
+        div [class "row"]
+        [ p [class "bg-success text-white", style [("margin", ".1cm")]]
+          [ p [] [text ((toString i)++" - "++(toString (i+1))++":")]
+          , strong [] [text name]
+          , button [style [("margin-left", ".5cm")], onClick (if (model.active_entry==Just i) then (ShowEntryForm Nothing) else (ShowEntryForm (Just i)))] [span [class "glyphicon glyphicon-remove"] []]
+          ]
+        ]
+      Nothing ->
+        div [class "row"] [p [class "bg-danger text-white", style [("margin", ".1cm")]] [text "ERROR"]]
 
 
 user_rows : Model -> Html Msg
@@ -134,6 +170,27 @@ user_rows model =
   --, user_row model 25
   ]
 
+error_message: Model -> Html Msg
+error_message model =
+  if model.error=="" then
+    div [] []
+  else
+    div [class "row alert alert-danger"] 
+    [ strong [] [text ("Error! ("++model.error++")")]
+    ]
+
+return_code_message: Model -> Html Msg
+return_code_message model =
+  case model.return_code of
+    0 -> div [] []
+    1 -> div [class "row alert alert-danger"] [strong [] [text ("Error! (Username does not exist)")]]
+    2 -> div [class "row alert alert-danger"] [strong [] [text ("Error! (Wrong passwort)")]]
+    3 -> div [class "row alert alert-danger"] [strong [] [text ("Error! (Inconsistent date)")]]
+    4 -> div [class "row alert alert-danger"] [strong [] [text ("Error! (Reservation already exists)")]]
+
+    20 -> div [class "row alert alert-success"] [strong [] [text ("Success! (Entry added)")]]
+    _ -> div [] []
+
 view: Model -> Html Msg
 view model =
   div []
@@ -142,6 +199,8 @@ view model =
   , nav_bar
   , div [class "container", style [("background-color", "#D0D0D0"), ("border-radius", "6px")]]
     [ date_row model
+    , error_message model
+    , return_code_message model
     , user_rows model
     ]
   ]
@@ -155,10 +214,29 @@ update msg model =
     next_day = model.days_in_the_future+1
   in
     case msg of
-      PreviousDay -> ({model | days_in_the_future=previous_day}, send_get_entries_request previous_day)
-      NextDay -> ({model | days_in_the_future=next_day}, send_get_entries_request next_day)
-      EntriesArrived (Ok entries) -> (Model model.days_in_the_future entries "", Cmd.none)
+      SendAddEntryRequest -> (model, send_add_entry_request model)
+      SetName name -> ({model | name=name}, Cmd.none)
+      SetPassword password -> ({model | password=password}, Cmd.none)
+      ShowEntryForm active_entry -> ({model | active_entry=active_entry, name="", password=""}, Cmd.none)
+        --case active_entry of
+        --  Nothing ->
+        --    ({model | active_entry=active_entry, name="", password=""}, Cmd.none)
+        --  Just active_entry ->
+        --    case Array.get active_entry model.entries.entries of
+        --      Just "" -> ({model | active_entry=(Just active_entry), name="", password=""}, Cmd.none)
+        --      Just name -> ({model | active_entry=(Just active_entry), name=name, password=""}, Cmd.none)
+        --      Nothing -> ({model | active_entry=(Just active_entry), name="", password=""}, Cmd.none)
+      PreviousDay -> ({model | days_in_the_future=previous_day, return_code=0}, send_get_entries_request previous_day)
+      NextDay -> ({model | days_in_the_future=next_day, return_code=0}, send_get_entries_request next_day)
+      EntriesArrived (Ok entries) -> ({model | entries=entries, name="", password="", active_entry=Nothing, error=""}, Cmd.none)
       EntriesArrived (Err err) -> case err of
+        Http.BadUrl s -> ({model | error="BadUrl: "++s}, Cmd.none)
+        Http.Timeout -> ({model | error="Timeout"}, Cmd.none)
+        Http.NetworkError -> ({model | error="NetworkError"}, Cmd.none)
+        Http.BadStatus _ -> ({model | error="BadStatus"}, Cmd.none)
+        Http.BadPayload s _ -> ({model | error="BadPayload: "++s}, Cmd.none)
+      ReturnCodeArrived (Ok return_code) -> ({model | return_code=return_code.return_code}, send_get_entries_request model.days_in_the_future)
+      ReturnCodeArrived (Err err) -> case err of
         Http.BadUrl s -> ({model | error="BadUrl: "++s}, Cmd.none)
         Http.Timeout -> ({model | error="Timeout"}, Cmd.none)
         Http.NetworkError -> ({model | error="NetworkError"}, Cmd.none)

@@ -16,12 +16,14 @@ import "sync"
 // import "crypto/rand"
 import "os"
 import "bytes"
+import "sort"
 
 const(
     user_file = "data/users.json"
     root_address = "/"
     root_file = "frontend/index.html"
     get_entries_address = "/get_entries"
+    add_entry_address = "/add_entry"
 )
 
 type Reservation struct{
@@ -51,6 +53,24 @@ type Users struct{
     lock *sync.RWMutex
 }
 
+func (u Users) Len() int{
+    return len(u.users)
+}
+
+func (u Users) Less(i, j int) bool{
+    return u.users[i].Name<u.users[j].Name
+}
+
+func (u Users) Swap(i, j int){
+    aux:=u.users[i]
+    u.users[i]=u.users[j]
+    u.users[j]=aux
+}
+
+func (u Users) Sort(){
+    sort.Sort(u)
+}
+
 func from_file(filename string) (Users,error){
     var users []User
     content, err:=ioutil.ReadFile(filename)
@@ -71,6 +91,10 @@ func from_file(filename string) (Users,error){
     }
 
     return Users{users, reservation_to_user, &sync.RWMutex{}}, nil
+}
+
+func new_users() Users{
+    return Users{[]User{}, make(map[Reservation]string), &sync.RWMutex{}}
 }
 
 func (u *Users) to_file(filename string) error{
@@ -219,6 +243,16 @@ func (u *Users) get_reservations_on_day(reservation_day Reservation) [24]string{
     return ret
 }
 
+func (u *Users) get_users_password(user string) (string, error){
+    for _,_user:=range u.users{
+        if _user.Name==user{
+            return _user.Password, nil
+        }
+    }
+
+    return "", errors.New("User with that name does not exist")
+}
+
 
 // func fun(){
 //     users:=[]User{
@@ -247,9 +281,13 @@ func (u *Users) get_reservations_on_day(reservation_day Reservation) [24]string{
 // strings.ToLower("Gopher")
 // delete(m, "route")
 func main() {
-    users,_:=from_file("asd.json")
+    // users,_:=from_file("asd.json")
 
-    fmt.Println(users)
+    // fmt.Println(users)
+    // sort.Sort(users)
+    // users.Sort()
+    // fmt.Println(users)
+
     // // users.remove_old_reservations()
     // // fmt.Println(users)
     // // fmt.Println(users.get_reservation_string_user_name_map())
@@ -257,6 +295,10 @@ func main() {
     // // users.remove_user("510")
     // users.add_reservation("502", Reservation{2017, 8, 28, 10}, users.get_reservation_string_user_name_map())
     // fmt.Println(users)
+    // users.add_user("zaphira", "zacks")
+    // users.add_user("felix", "von")
+    // users.add_user("peter", "pets")
+
     // users.to_file("asd.json")
     // return
 
@@ -273,7 +315,14 @@ func main() {
     // f.Close()
 
 
-
+    users:=new_users()
+    users.add_user("502", "password")
+    users.add_reservation("502", Reservation{2017, 8, 30, 2})
+    users.add_user("503", "password")
+    users.add_reservation("503", Reservation{2017, 8, 30, 3})
+    users.add_user("504", "password")
+    users.add_reservation("504", Reservation{2017, 8, 30, 4})
+    fmt.Println(users)
 
 
 
@@ -355,8 +404,6 @@ func main() {
                 return Days_in_the_future.Days_in_the_future
             }()
 
-            fmt.Println("days_in_the_future: ", days_in_the_future)
-
             var to_send struct{
                 Date string
                 Entries [24] string
@@ -369,7 +416,6 @@ func main() {
             to_send.Date=fmt.Sprintf("%s, %d of %s", weekday.String(), day, month.String())
             entries:=users.get_reservations_on_day(Reservation{year, int(month), day, 0})
             copy(to_send.Entries[:], entries[:])
-            // fmt.Println(to_send)
 
             json_entries_data,err:=json.Marshal(to_send)
             if err!=nil{
@@ -379,6 +425,113 @@ func main() {
             }
 
             w.Write(json_entries_data)
+
+        } else {
+            http.Error(w, "Request must be POST.", http.StatusBadRequest)
+            return
+        }
+    })
+
+    mux.HandleFunc(add_entry_address, func (w http.ResponseWriter, r *http.Request){
+        if r.Method=="POST"{
+            type AddEntryRequestData struct{
+                Days_in_the_future int
+                Date string
+                Active_entry int
+                Name string
+                Password string
+            }
+
+            // Get request data
+            add_entry_request_data, err:=func() (AddEntryRequestData, error){
+                add_entry_request_data:=AddEntryRequestData{}
+                if r.Body==nil{
+                    return add_entry_request_data, errors.New("No body")
+                }
+                buf:=new(bytes.Buffer)
+                buf.ReadFrom(r.Body)
+                r.Body.Close()
+
+                err:=json.Unmarshal(buf.Bytes(), &add_entry_request_data)
+                if err!=nil{
+                    fmt.Println(err)
+                    return add_entry_request_data, errors.New("Could not read request")
+                }
+
+                return add_entry_request_data, nil
+            }()
+
+            if err!=nil{
+                http.NotFound(w, r)
+                return
+            }
+
+            var to_send struct{
+                Return_code int
+            }
+
+            // Get password, on error send errorcode
+            password, err:=users.get_users_password(add_entry_request_data.Name)
+            if err!=nil{
+                to_send.Return_code=1
+                json_to_send,err:=json.Marshal(to_send)
+                if err!=nil{
+                    http.NotFound(w, r)
+                    return
+                }
+                w.Write(json_to_send)
+                return
+            }
+
+            // See if password is correct, on error send errorcode
+            if add_entry_request_data.Password!=password{
+                to_send.Return_code=2
+                json_to_send,err:=json.Marshal(to_send)
+                if err!=nil{
+                    http.NotFound(w, r)
+                    return
+                }
+                w.Write(json_to_send)
+                return
+            }
+
+            // See if dates are inconsistent
+            now:=time.Now().AddDate(0,0,add_entry_request_data.Days_in_the_future)
+            year, month, day:=now.Date()
+            weekday:=now.Weekday()
+            if fmt.Sprintf("%s, %d of %s", weekday.String(), day, month.String())!=add_entry_request_data.Date{
+                to_send.Return_code=3
+                json_to_send,err:=json.Marshal(to_send)
+                if err!=nil{
+                    http.NotFound(w, r)
+                    return
+                }
+                w.Write(json_to_send)
+                return
+            }
+
+            // Try to add the actual reservation
+            err=users.add_reservation(add_entry_request_data.Name, Reservation{year, int(month), day, add_entry_request_data.Active_entry})
+            if err!=nil{
+                to_send.Return_code=4
+                json_to_send,err:=json.Marshal(to_send)
+                if err!=nil{
+                    http.NotFound(w, r)
+                    return
+                }
+                w.Write(json_to_send)
+                return
+            }
+
+            // If the program got here, the reservation was added correctly. Send good return code
+            to_send.Return_code=20
+            json_to_send,err:=json.Marshal(to_send)
+            if err!=nil{
+                http.NotFound(w, r)
+                return
+            }
+            w.Write(json_to_send)
+            return
 
         } else {
             http.Error(w, "Request must be POST.", http.StatusBadRequest)

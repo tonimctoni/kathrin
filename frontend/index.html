@@ -9001,319 +9001,147 @@ var _elm_lang$http$Http$stringPart = _elm_lang$http$Http$StringPart;
 var _user$project$Main$subscriptions = function (model) {
 	return _elm_lang$core$Platform_Sub$none;
 };
-var _user$project$Main$user_row = F2(
-	function (model, i) {
-		var entry_row_error = A2(
-			_elm_lang$html$Html$div,
-			{
-				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$class('row'),
-				_1: {ctor: '[]'}
-			},
-			{
-				ctor: '::',
-				_0: A2(
-					_elm_lang$html$Html$p,
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$class('bg-danger text-white'),
-						_1: {
-							ctor: '::',
-							_0: _elm_lang$html$Html_Attributes$style(
-								{
-									ctor: '::',
-									_0: {ctor: '_Tuple2', _0: 'margin', _1: '.1cm'},
-									_1: {ctor: '[]'}
-								}),
-							_1: {ctor: '[]'}
-						}
-					},
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html$text('ERROR'),
-						_1: {ctor: '[]'}
-					}),
-				_1: {ctor: '[]'}
-			});
-		var entry_row_occ = F2(
-			function (i, name) {
-				return A2(
-					_elm_lang$html$Html$div,
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$class('row'),
-						_1: {ctor: '[]'}
-					},
-					{
-						ctor: '::',
-						_0: A2(
-							_elm_lang$html$Html$p,
-							{
-								ctor: '::',
-								_0: _elm_lang$html$Html_Attributes$class('bg-success text-white'),
-								_1: {
-									ctor: '::',
-									_0: _elm_lang$html$Html_Attributes$style(
-										{
-											ctor: '::',
-											_0: {ctor: '_Tuple2', _0: 'margin', _1: '.1cm'},
-											_1: {ctor: '[]'}
-										}),
-									_1: {ctor: '[]'}
-								}
-							},
-							{
-								ctor: '::',
-								_0: A2(
-									_elm_lang$html$Html$p,
-									{ctor: '[]'},
-									{
-										ctor: '::',
-										_0: _elm_lang$html$Html$text(
-											A2(
-												_elm_lang$core$Basics_ops['++'],
-												_elm_lang$core$Basics$toString(i),
-												A2(
-													_elm_lang$core$Basics_ops['++'],
-													' - ',
-													A2(
-														_elm_lang$core$Basics_ops['++'],
-														_elm_lang$core$Basics$toString(i + 1),
-														':')))),
-										_1: {ctor: '[]'}
-									}),
-								_1: {
-									ctor: '::',
-									_0: A2(
-										_elm_lang$html$Html$strong,
-										{ctor: '[]'},
-										{
-											ctor: '::',
-											_0: _elm_lang$html$Html$text(name),
-											_1: {ctor: '[]'}
-										}),
-									_1: {
-										ctor: '::',
-										_0: A2(
-											_elm_lang$html$Html$button,
-											{
-												ctor: '::',
-												_0: _elm_lang$html$Html_Attributes$style(
-													{
-														ctor: '::',
-														_0: {ctor: '_Tuple2', _0: 'margin-left', _1: '.5cm'},
-														_1: {ctor: '[]'}
-													}),
-												_1: {ctor: '[]'}
-											},
-											{
-												ctor: '::',
-												_0: A2(
-													_elm_lang$html$Html$span,
-													{
-														ctor: '::',
-														_0: _elm_lang$html$Html_Attributes$class('glyphicon glyphicon-remove'),
-														_1: {ctor: '[]'}
-													},
-													{ctor: '[]'}),
-												_1: {ctor: '[]'}
-											}),
-										_1: {ctor: '[]'}
-									}
-								}
-							}),
-						_1: {ctor: '[]'}
-					});
-			});
-		var entry_row_free = function (i) {
+var _user$project$Main$return_code_message = function (model) {
+	var _p0 = model.return_code;
+	switch (_p0) {
+		case 0:
+			return A2(
+				_elm_lang$html$Html$div,
+				{ctor: '[]'},
+				{ctor: '[]'});
+		case 1:
 			return A2(
 				_elm_lang$html$Html$div,
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$class('row'),
+					_0: _elm_lang$html$Html_Attributes$class('row alert alert-danger'),
 					_1: {ctor: '[]'}
 				},
 				{
 					ctor: '::',
 					_0: A2(
-						_elm_lang$html$Html$p,
+						_elm_lang$html$Html$strong,
+						{ctor: '[]'},
 						{
 							ctor: '::',
-							_0: _elm_lang$html$Html_Attributes$class('bg-info text-white'),
-							_1: {
-								ctor: '::',
-								_0: _elm_lang$html$Html_Attributes$style(
-									{
-										ctor: '::',
-										_0: {ctor: '_Tuple2', _0: 'margin', _1: '.1cm'},
-										_1: {ctor: '[]'}
-									}),
-								_1: {ctor: '[]'}
-							}
-						},
-						{
-							ctor: '::',
-							_0: A2(
-								_elm_lang$html$Html$p,
-								{ctor: '[]'},
-								{
-									ctor: '::',
-									_0: _elm_lang$html$Html$text(
-										A2(
-											_elm_lang$core$Basics_ops['++'],
-											_elm_lang$core$Basics$toString(i),
-											A2(
-												_elm_lang$core$Basics_ops['++'],
-												' - ',
-												A2(
-													_elm_lang$core$Basics_ops['++'],
-													_elm_lang$core$Basics$toString(i + 1),
-													':')))),
-									_1: {ctor: '[]'}
-								}),
-							_1: {
-								ctor: '::',
-								_0: A2(
-									_elm_lang$html$Html$button,
-									{
-										ctor: '::',
-										_0: _elm_lang$html$Html_Attributes$style(
-											{
-												ctor: '::',
-												_0: {ctor: '_Tuple2', _0: 'margin-left', _1: '.5cm'},
-												_1: {ctor: '[]'}
-											}),
-										_1: {ctor: '[]'}
-									},
-									{
-										ctor: '::',
-										_0: A2(
-											_elm_lang$html$Html$span,
-											{
-												ctor: '::',
-												_0: _elm_lang$html$Html_Attributes$class('glyphicon glyphicon-pencil'),
-												_1: {ctor: '[]'}
-											},
-											{ctor: '[]'}),
-										_1: {ctor: '[]'}
-									}),
-								_1: {ctor: '[]'}
-							}
+							_0: _elm_lang$html$Html$text('Error! (Username does not exist)'),
+							_1: {ctor: '[]'}
 						}),
 					_1: {ctor: '[]'}
 				});
-		};
-		var _p0 = A2(_elm_lang$core$Array$get, i, model.entries.entries);
-		if (_p0.ctor === 'Just') {
-			if (_p0._0 === '') {
-				return entry_row_free(i);
-			} else {
-				return A2(entry_row_occ, i, _p0._0);
-			}
-		} else {
-			return entry_row_error;
-		}
-	});
-var _user$project$Main$user_rows = function (model) {
-	return A2(
+		case 2:
+			return A2(
+				_elm_lang$html$Html$div,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$class('row alert alert-danger'),
+					_1: {ctor: '[]'}
+				},
+				{
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$strong,
+						{ctor: '[]'},
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html$text('Error! (Wrong passwort)'),
+							_1: {ctor: '[]'}
+						}),
+					_1: {ctor: '[]'}
+				});
+		case 3:
+			return A2(
+				_elm_lang$html$Html$div,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$class('row alert alert-danger'),
+					_1: {ctor: '[]'}
+				},
+				{
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$strong,
+						{ctor: '[]'},
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html$text('Error! (Inconsistent date)'),
+							_1: {ctor: '[]'}
+						}),
+					_1: {ctor: '[]'}
+				});
+		case 4:
+			return A2(
+				_elm_lang$html$Html$div,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$class('row alert alert-danger'),
+					_1: {ctor: '[]'}
+				},
+				{
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$strong,
+						{ctor: '[]'},
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html$text('Error! (Reservation already exists)'),
+							_1: {ctor: '[]'}
+						}),
+					_1: {ctor: '[]'}
+				});
+		case 20:
+			return A2(
+				_elm_lang$html$Html$div,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$class('row alert alert-success'),
+					_1: {ctor: '[]'}
+				},
+				{
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$strong,
+						{ctor: '[]'},
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html$text('Success! (Entry added)'),
+							_1: {ctor: '[]'}
+						}),
+					_1: {ctor: '[]'}
+				});
+		default:
+			return A2(
+				_elm_lang$html$Html$div,
+				{ctor: '[]'},
+				{ctor: '[]'});
+	}
+};
+var _user$project$Main$error_message = function (model) {
+	return _elm_lang$core$Native_Utils.eq(model.error, '') ? A2(
 		_elm_lang$html$Html$div,
 		{ctor: '[]'},
+		{ctor: '[]'}) : A2(
+		_elm_lang$html$Html$div,
 		{
 			ctor: '::',
-			_0: A2(_user$project$Main$user_row, model, 0),
-			_1: {
-				ctor: '::',
-				_0: A2(_user$project$Main$user_row, model, 1),
-				_1: {
+			_0: _elm_lang$html$Html_Attributes$class('row alert alert-danger'),
+			_1: {ctor: '[]'}
+		},
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$strong,
+				{ctor: '[]'},
+				{
 					ctor: '::',
-					_0: A2(_user$project$Main$user_row, model, 2),
-					_1: {
-						ctor: '::',
-						_0: A2(_user$project$Main$user_row, model, 3),
-						_1: {
-							ctor: '::',
-							_0: A2(_user$project$Main$user_row, model, 4),
-							_1: {
-								ctor: '::',
-								_0: A2(_user$project$Main$user_row, model, 5),
-								_1: {
-									ctor: '::',
-									_0: A2(_user$project$Main$user_row, model, 6),
-									_1: {
-										ctor: '::',
-										_0: A2(_user$project$Main$user_row, model, 7),
-										_1: {
-											ctor: '::',
-											_0: A2(_user$project$Main$user_row, model, 8),
-											_1: {
-												ctor: '::',
-												_0: A2(_user$project$Main$user_row, model, 9),
-												_1: {
-													ctor: '::',
-													_0: A2(_user$project$Main$user_row, model, 10),
-													_1: {
-														ctor: '::',
-														_0: A2(_user$project$Main$user_row, model, 11),
-														_1: {
-															ctor: '::',
-															_0: A2(_user$project$Main$user_row, model, 12),
-															_1: {
-																ctor: '::',
-																_0: A2(_user$project$Main$user_row, model, 13),
-																_1: {
-																	ctor: '::',
-																	_0: A2(_user$project$Main$user_row, model, 14),
-																	_1: {
-																		ctor: '::',
-																		_0: A2(_user$project$Main$user_row, model, 15),
-																		_1: {
-																			ctor: '::',
-																			_0: A2(_user$project$Main$user_row, model, 16),
-																			_1: {
-																				ctor: '::',
-																				_0: A2(_user$project$Main$user_row, model, 17),
-																				_1: {
-																					ctor: '::',
-																					_0: A2(_user$project$Main$user_row, model, 18),
-																					_1: {
-																						ctor: '::',
-																						_0: A2(_user$project$Main$user_row, model, 19),
-																						_1: {
-																							ctor: '::',
-																							_0: A2(_user$project$Main$user_row, model, 20),
-																							_1: {
-																								ctor: '::',
-																								_0: A2(_user$project$Main$user_row, model, 21),
-																								_1: {
-																									ctor: '::',
-																									_0: A2(_user$project$Main$user_row, model, 22),
-																									_1: {
-																										ctor: '::',
-																										_0: A2(_user$project$Main$user_row, model, 23),
-																										_1: {ctor: '[]'}
-																									}
-																								}
-																							}
-																						}
-																					}
-																				}
-																			}
-																		}
-																	}
-																}
-															}
-														}
-													}
-												}
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
+					_0: _elm_lang$html$Html$text(
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							'Error! (',
+							A2(_elm_lang$core$Basics_ops['++'], model.error, ')'))),
+					_1: {ctor: '[]'}
+				}),
+			_1: {ctor: '[]'}
 		});
 };
 var _user$project$Main$nav_bar = A2(
@@ -9424,14 +9252,479 @@ var _user$project$Main$nav_bar = A2(
 			}),
 		_1: {ctor: '[]'}
 	});
+var _user$project$Main$ReturnCode = function (a) {
+	return {return_code: a};
+};
 var _user$project$Main$Entries = F2(
 	function (a, b) {
 		return {date: a, entries: b};
 	});
-var _user$project$Main$Model = F3(
-	function (a, b, c) {
-		return {days_in_the_future: a, entries: b, error: c};
+var _user$project$Main$Model = F7(
+	function (a, b, c, d, e, f, g) {
+		return {days_in_the_future: a, entries: b, active_entry: c, name: d, password: e, error: f, return_code: g};
 	});
+var _user$project$Main$ReturnCodeArrived = function (a) {
+	return {ctor: 'ReturnCodeArrived', _0: a};
+};
+var _user$project$Main$send_add_entry_request = function (model) {
+	var _p1 = model.active_entry;
+	if (_p1.ctor === 'Nothing') {
+		return _elm_lang$core$Platform_Cmd$none;
+	} else {
+		var return_code_decoder = A2(
+			_elm_lang$core$Json_Decode$map,
+			_user$project$Main$ReturnCode,
+			A2(_elm_lang$core$Json_Decode$field, 'Return_code', _elm_lang$core$Json_Decode$int));
+		var body = _elm_lang$http$Http$jsonBody(
+			_elm_lang$core$Json_Encode$object(
+				{
+					ctor: '::',
+					_0: {
+						ctor: '_Tuple2',
+						_0: 'days_in_the_future',
+						_1: _elm_lang$core$Json_Encode$int(model.days_in_the_future)
+					},
+					_1: {
+						ctor: '::',
+						_0: {
+							ctor: '_Tuple2',
+							_0: 'date',
+							_1: _elm_lang$core$Json_Encode$string(model.entries.date)
+						},
+						_1: {
+							ctor: '::',
+							_0: {
+								ctor: '_Tuple2',
+								_0: 'active_entry',
+								_1: _elm_lang$core$Json_Encode$int(_p1._0)
+							},
+							_1: {
+								ctor: '::',
+								_0: {
+									ctor: '_Tuple2',
+									_0: 'name',
+									_1: _elm_lang$core$Json_Encode$string(model.name)
+								},
+								_1: {
+									ctor: '::',
+									_0: {
+										ctor: '_Tuple2',
+										_0: 'password',
+										_1: _elm_lang$core$Json_Encode$string(model.password)
+									},
+									_1: {ctor: '[]'}
+								}
+							}
+						}
+					}
+				}));
+		return A2(
+			_elm_lang$http$Http$send,
+			_user$project$Main$ReturnCodeArrived,
+			A3(_elm_lang$http$Http$post, '/add_entry', body, return_code_decoder));
+	}
+};
+var _user$project$Main$SendAddEntryRequest = {ctor: 'SendAddEntryRequest'};
+var _user$project$Main$SetPassword = function (a) {
+	return {ctor: 'SetPassword', _0: a};
+};
+var _user$project$Main$SetName = function (a) {
+	return {ctor: 'SetName', _0: a};
+};
+var _user$project$Main$ShowEntryForm = function (a) {
+	return {ctor: 'ShowEntryForm', _0: a};
+};
+var _user$project$Main$user_row = F2(
+	function (model, i) {
+		var add_entry_form = function (model) {
+			return A2(
+				_elm_lang$html$Html$div,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$input,
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$type_('text'),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$placeholder('Name'),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$html$Html_Events$onInput(_user$project$Main$SetName),
+									_1: {ctor: '[]'}
+								}
+							}
+						},
+						{ctor: '[]'}),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$input,
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$type_('password'),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$html$Html_Attributes$placeholder('Password'),
+									_1: {
+										ctor: '::',
+										_0: _elm_lang$html$Html_Events$onInput(_user$project$Main$SetPassword),
+										_1: {ctor: '[]'}
+									}
+								}
+							},
+							{ctor: '[]'}),
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$button,
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html_Events$onClick(_user$project$Main$SendAddEntryRequest),
+									_1: {ctor: '[]'}
+								},
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html$text('OK'),
+									_1: {ctor: '[]'}
+								}),
+							_1: {ctor: '[]'}
+						}
+					}
+				});
+		};
+		var _p2 = A2(_elm_lang$core$Array$get, i, model.entries.entries);
+		if (_p2.ctor === 'Just') {
+			if (_p2._0 === '') {
+				return A2(
+					_elm_lang$html$Html$div,
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$class('row'),
+						_1: {ctor: '[]'}
+					},
+					{
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$p,
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$class('bg-info text-white'),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$html$Html_Attributes$style(
+										{
+											ctor: '::',
+											_0: {ctor: '_Tuple2', _0: 'margin', _1: '.1cm'},
+											_1: {ctor: '[]'}
+										}),
+									_1: {ctor: '[]'}
+								}
+							},
+							{
+								ctor: '::',
+								_0: A2(
+									_elm_lang$html$Html$p,
+									{ctor: '[]'},
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html$text(
+											A2(
+												_elm_lang$core$Basics_ops['++'],
+												_elm_lang$core$Basics$toString(i),
+												A2(
+													_elm_lang$core$Basics_ops['++'],
+													' - ',
+													A2(
+														_elm_lang$core$Basics_ops['++'],
+														_elm_lang$core$Basics$toString(i + 1),
+														':')))),
+										_1: {ctor: '[]'}
+									}),
+								_1: {
+									ctor: '::',
+									_0: A2(
+										_elm_lang$html$Html$button,
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html_Attributes$style(
+												{
+													ctor: '::',
+													_0: {ctor: '_Tuple2', _0: 'margin-left', _1: '.5cm'},
+													_1: {ctor: '[]'}
+												}),
+											_1: {
+												ctor: '::',
+												_0: _elm_lang$html$Html_Events$onClick(
+													_elm_lang$core$Native_Utils.eq(
+														model.active_entry,
+														_elm_lang$core$Maybe$Just(i)) ? _user$project$Main$ShowEntryForm(_elm_lang$core$Maybe$Nothing) : _user$project$Main$ShowEntryForm(
+														_elm_lang$core$Maybe$Just(i))),
+												_1: {ctor: '[]'}
+											}
+										},
+										{
+											ctor: '::',
+											_0: A2(
+												_elm_lang$html$Html$span,
+												{
+													ctor: '::',
+													_0: _elm_lang$html$Html_Attributes$class('glyphicon glyphicon-pencil'),
+													_1: {ctor: '[]'}
+												},
+												{ctor: '[]'}),
+											_1: {ctor: '[]'}
+										}),
+									_1: {
+										ctor: '::',
+										_0: _elm_lang$core$Native_Utils.eq(
+											model.active_entry,
+											_elm_lang$core$Maybe$Just(i)) ? add_entry_form(model) : A2(
+											_elm_lang$html$Html$div,
+											{ctor: '[]'},
+											{ctor: '[]'}),
+										_1: {ctor: '[]'}
+									}
+								}
+							}),
+						_1: {ctor: '[]'}
+					});
+			} else {
+				return A2(
+					_elm_lang$html$Html$div,
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$class('row'),
+						_1: {ctor: '[]'}
+					},
+					{
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$p,
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$class('bg-success text-white'),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$html$Html_Attributes$style(
+										{
+											ctor: '::',
+											_0: {ctor: '_Tuple2', _0: 'margin', _1: '.1cm'},
+											_1: {ctor: '[]'}
+										}),
+									_1: {ctor: '[]'}
+								}
+							},
+							{
+								ctor: '::',
+								_0: A2(
+									_elm_lang$html$Html$p,
+									{ctor: '[]'},
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html$text(
+											A2(
+												_elm_lang$core$Basics_ops['++'],
+												_elm_lang$core$Basics$toString(i),
+												A2(
+													_elm_lang$core$Basics_ops['++'],
+													' - ',
+													A2(
+														_elm_lang$core$Basics_ops['++'],
+														_elm_lang$core$Basics$toString(i + 1),
+														':')))),
+										_1: {ctor: '[]'}
+									}),
+								_1: {
+									ctor: '::',
+									_0: A2(
+										_elm_lang$html$Html$strong,
+										{ctor: '[]'},
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html$text(_p2._0),
+											_1: {ctor: '[]'}
+										}),
+									_1: {
+										ctor: '::',
+										_0: A2(
+											_elm_lang$html$Html$button,
+											{
+												ctor: '::',
+												_0: _elm_lang$html$Html_Attributes$style(
+													{
+														ctor: '::',
+														_0: {ctor: '_Tuple2', _0: 'margin-left', _1: '.5cm'},
+														_1: {ctor: '[]'}
+													}),
+												_1: {
+													ctor: '::',
+													_0: _elm_lang$html$Html_Events$onClick(
+														_elm_lang$core$Native_Utils.eq(
+															model.active_entry,
+															_elm_lang$core$Maybe$Just(i)) ? _user$project$Main$ShowEntryForm(_elm_lang$core$Maybe$Nothing) : _user$project$Main$ShowEntryForm(
+															_elm_lang$core$Maybe$Just(i))),
+													_1: {ctor: '[]'}
+												}
+											},
+											{
+												ctor: '::',
+												_0: A2(
+													_elm_lang$html$Html$span,
+													{
+														ctor: '::',
+														_0: _elm_lang$html$Html_Attributes$class('glyphicon glyphicon-remove'),
+														_1: {ctor: '[]'}
+													},
+													{ctor: '[]'}),
+												_1: {ctor: '[]'}
+											}),
+										_1: {ctor: '[]'}
+									}
+								}
+							}),
+						_1: {ctor: '[]'}
+					});
+			}
+		} else {
+			return A2(
+				_elm_lang$html$Html$div,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$class('row'),
+					_1: {ctor: '[]'}
+				},
+				{
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$p,
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$class('bg-danger text-white'),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$style(
+									{
+										ctor: '::',
+										_0: {ctor: '_Tuple2', _0: 'margin', _1: '.1cm'},
+										_1: {ctor: '[]'}
+									}),
+								_1: {ctor: '[]'}
+							}
+						},
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html$text('ERROR'),
+							_1: {ctor: '[]'}
+						}),
+					_1: {ctor: '[]'}
+				});
+		}
+	});
+var _user$project$Main$user_rows = function (model) {
+	return A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: A2(_user$project$Main$user_row, model, 0),
+			_1: {
+				ctor: '::',
+				_0: A2(_user$project$Main$user_row, model, 1),
+				_1: {
+					ctor: '::',
+					_0: A2(_user$project$Main$user_row, model, 2),
+					_1: {
+						ctor: '::',
+						_0: A2(_user$project$Main$user_row, model, 3),
+						_1: {
+							ctor: '::',
+							_0: A2(_user$project$Main$user_row, model, 4),
+							_1: {
+								ctor: '::',
+								_0: A2(_user$project$Main$user_row, model, 5),
+								_1: {
+									ctor: '::',
+									_0: A2(_user$project$Main$user_row, model, 6),
+									_1: {
+										ctor: '::',
+										_0: A2(_user$project$Main$user_row, model, 7),
+										_1: {
+											ctor: '::',
+											_0: A2(_user$project$Main$user_row, model, 8),
+											_1: {
+												ctor: '::',
+												_0: A2(_user$project$Main$user_row, model, 9),
+												_1: {
+													ctor: '::',
+													_0: A2(_user$project$Main$user_row, model, 10),
+													_1: {
+														ctor: '::',
+														_0: A2(_user$project$Main$user_row, model, 11),
+														_1: {
+															ctor: '::',
+															_0: A2(_user$project$Main$user_row, model, 12),
+															_1: {
+																ctor: '::',
+																_0: A2(_user$project$Main$user_row, model, 13),
+																_1: {
+																	ctor: '::',
+																	_0: A2(_user$project$Main$user_row, model, 14),
+																	_1: {
+																		ctor: '::',
+																		_0: A2(_user$project$Main$user_row, model, 15),
+																		_1: {
+																			ctor: '::',
+																			_0: A2(_user$project$Main$user_row, model, 16),
+																			_1: {
+																				ctor: '::',
+																				_0: A2(_user$project$Main$user_row, model, 17),
+																				_1: {
+																					ctor: '::',
+																					_0: A2(_user$project$Main$user_row, model, 18),
+																					_1: {
+																						ctor: '::',
+																						_0: A2(_user$project$Main$user_row, model, 19),
+																						_1: {
+																							ctor: '::',
+																							_0: A2(_user$project$Main$user_row, model, 20),
+																							_1: {
+																								ctor: '::',
+																								_0: A2(_user$project$Main$user_row, model, 21),
+																								_1: {
+																									ctor: '::',
+																									_0: A2(_user$project$Main$user_row, model, 22),
+																									_1: {
+																										ctor: '::',
+																										_0: A2(_user$project$Main$user_row, model, 23),
+																										_1: {ctor: '[]'}
+																									}
+																								}
+																							}
+																						}
+																					}
+																				}
+																			}
+																		}
+																	}
+																}
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		});
+};
 var _user$project$Main$EntriesArrived = function (a) {
 	return {ctor: 'EntriesArrived', _0: a};
 };
@@ -9462,25 +9755,59 @@ var _user$project$Main$send_get_entries_request = function (days_in_the_future) 
 };
 var _user$project$Main$init = {
 	ctor: '_Tuple2',
-	_0: A3(
+	_0: A7(
 		_user$project$Main$Model,
 		0,
 		A2(_user$project$Main$Entries, '', _elm_lang$core$Array$empty),
-		''),
+		_elm_lang$core$Maybe$Nothing,
+		'',
+		'',
+		'',
+		0),
 	_1: _user$project$Main$send_get_entries_request(0)
 };
 var _user$project$Main$update = F2(
 	function (msg, model) {
 		var next_day = model.days_in_the_future + 1;
 		var previous_day = (_elm_lang$core$Native_Utils.cmp(model.days_in_the_future, 0) > 0) ? (model.days_in_the_future - 1) : 0;
-		var _p1 = msg;
-		switch (_p1.ctor) {
+		var _p3 = msg;
+		switch (_p3.ctor) {
+			case 'SendAddEntryRequest':
+				return {
+					ctor: '_Tuple2',
+					_0: model,
+					_1: _user$project$Main$send_add_entry_request(model)
+				};
+			case 'SetName':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{name: _p3._0}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			case 'SetPassword':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{password: _p3._0}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			case 'ShowEntryForm':
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{active_entry: _p3._0, name: '', password: ''}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
 			case 'PreviousDay':
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{days_in_the_future: previous_day}),
+						{days_in_the_future: previous_day, return_code: 0}),
 					_1: _user$project$Main$send_get_entries_request(previous_day)
 				};
 			case 'NextDay':
@@ -9488,26 +9815,28 @@ var _user$project$Main$update = F2(
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{days_in_the_future: next_day}),
+						{days_in_the_future: next_day, return_code: 0}),
 					_1: _user$project$Main$send_get_entries_request(next_day)
 				};
-			default:
-				if (_p1._0.ctor === 'Ok') {
+			case 'EntriesArrived':
+				if (_p3._0.ctor === 'Ok') {
 					return {
 						ctor: '_Tuple2',
-						_0: A3(_user$project$Main$Model, model.days_in_the_future, _p1._0._0, ''),
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{entries: _p3._0._0, name: '', password: '', active_entry: _elm_lang$core$Maybe$Nothing, error: ''}),
 						_1: _elm_lang$core$Platform_Cmd$none
 					};
 				} else {
-					var _p2 = _p1._0._0;
-					switch (_p2.ctor) {
+					var _p4 = _p3._0._0;
+					switch (_p4.ctor) {
 						case 'BadUrl':
 							return {
 								ctor: '_Tuple2',
 								_0: _elm_lang$core$Native_Utils.update(
 									model,
 									{
-										error: A2(_elm_lang$core$Basics_ops['++'], 'BadUrl: ', _p2._0)
+										error: A2(_elm_lang$core$Basics_ops['++'], 'BadUrl: ', _p4._0)
 									}),
 								_1: _elm_lang$core$Platform_Cmd$none
 							};
@@ -9541,7 +9870,65 @@ var _user$project$Main$update = F2(
 								_0: _elm_lang$core$Native_Utils.update(
 									model,
 									{
-										error: A2(_elm_lang$core$Basics_ops['++'], 'BadPayload: ', _p2._0)
+										error: A2(_elm_lang$core$Basics_ops['++'], 'BadPayload: ', _p4._0)
+									}),
+								_1: _elm_lang$core$Platform_Cmd$none
+							};
+					}
+				}
+			default:
+				if (_p3._0.ctor === 'Ok') {
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{return_code: _p3._0._0.return_code}),
+						_1: _user$project$Main$send_get_entries_request(model.days_in_the_future)
+					};
+				} else {
+					var _p5 = _p3._0._0;
+					switch (_p5.ctor) {
+						case 'BadUrl':
+							return {
+								ctor: '_Tuple2',
+								_0: _elm_lang$core$Native_Utils.update(
+									model,
+									{
+										error: A2(_elm_lang$core$Basics_ops['++'], 'BadUrl: ', _p5._0)
+									}),
+								_1: _elm_lang$core$Platform_Cmd$none
+							};
+						case 'Timeout':
+							return {
+								ctor: '_Tuple2',
+								_0: _elm_lang$core$Native_Utils.update(
+									model,
+									{error: 'Timeout'}),
+								_1: _elm_lang$core$Platform_Cmd$none
+							};
+						case 'NetworkError':
+							return {
+								ctor: '_Tuple2',
+								_0: _elm_lang$core$Native_Utils.update(
+									model,
+									{error: 'NetworkError'}),
+								_1: _elm_lang$core$Platform_Cmd$none
+							};
+						case 'BadStatus':
+							return {
+								ctor: '_Tuple2',
+								_0: _elm_lang$core$Native_Utils.update(
+									model,
+									{error: 'BadStatus'}),
+								_1: _elm_lang$core$Platform_Cmd$none
+							};
+						default:
+							return {
+								ctor: '_Tuple2',
+								_0: _elm_lang$core$Native_Utils.update(
+									model,
+									{
+										error: A2(_elm_lang$core$Basics_ops['++'], 'BadPayload: ', _p5._0)
 									}),
 								_1: _elm_lang$core$Platform_Cmd$none
 							};
@@ -9747,8 +10134,16 @@ var _user$project$Main$view = function (model) {
 							_0: _user$project$Main$date_row(model),
 							_1: {
 								ctor: '::',
-								_0: _user$project$Main$user_rows(model),
-								_1: {ctor: '[]'}
+								_0: _user$project$Main$error_message(model),
+								_1: {
+									ctor: '::',
+									_0: _user$project$Main$return_code_message(model),
+									_1: {
+										ctor: '::',
+										_0: _user$project$Main$user_rows(model),
+										_1: {ctor: '[]'}
+									}
+								}
 							}
 						}),
 					_1: {ctor: '[]'}
