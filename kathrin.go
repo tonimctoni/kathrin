@@ -261,14 +261,20 @@ func (u *Users) get_users_password(user string) (string, error){
 // strings.ToLower("Gopher")
 // delete(m, "route")
 func main() {
-    users:=new_users()
-    users.add_user("502", "password")
-    users.add_reservation("502", Reservation{2017, 8, 30, 2})
-    users.add_user("503", "password")
-    users.add_reservation("503", Reservation{2017, 8, 30, 3})
-    users.add_user("504", "password")
-    users.add_reservation("504", Reservation{2017, 8, 30, 4})
-    fmt.Println(users)
+    // users:=new_users()
+    // users.add_user("502", "password")
+    // users.add_reservation("502", Reservation{2017, 8, 30, 2})
+    // users.add_user("503", "password")
+    // users.add_reservation("503", Reservation{2017, 8, 30, 3})
+    // users.add_user("504", "password")
+    // users.add_reservation("504", Reservation{2017, 8, 30, 4})
+    // fmt.Println(users)
+    users, err:=from_file(user_file)
+    if err!=nil{
+        panic(err)
+    }
+
+    fmt.Println(users.users)
 
     bootstrap_files:=[]string{
         "bootstrap/css/bootstrap.min.css",
@@ -447,6 +453,8 @@ func main() {
                 return
             }
 
+            users.to_file(user_file)
+
             // If the program got here, the reservation was added correctly. Send good return code
             to_send.Return_code=20
             json_to_send,err:=json.Marshal(to_send)
@@ -554,7 +562,9 @@ func main() {
                 return
             }
 
-            // If the program got here, the reservation was added correctly. Send good return code
+            users.to_file(user_file)
+
+            // If the program got here, the reservation was removed correctly. Send good return code
             to_send.Return_code=21
             json_to_send,err:=json.Marshal(to_send)
             if err!=nil{

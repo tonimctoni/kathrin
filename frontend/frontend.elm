@@ -125,7 +125,7 @@ nav_bar =
       ]
     , ul [class "nav navbar-nav"]
       [ li [class "active"] [a [href "/"] [text "Plan"]]
-      , li [] [a [href "/entries"] [text "My Entries"]]
+      , li [] [a [href "/add_entries"] [text "All Entries"]]
       ]
     ]
   ]
@@ -244,7 +244,7 @@ view: Model -> Html Msg
 view model =
   div []
   --[ node "link" [ rel "stylesheet", href "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"] []
-  [ node "link" [ rel "stylesheet", href "http://localhost:8000/bootstrap/css/bootstrap.min.css"] []
+  [ node "link" [ rel "stylesheet", href "/bootstrap/css/bootstrap.min.css"] []
   , nav_bar
   , div [class "container", style [("background-color", "#D0D0D0"), ("border-radius", "6px")]]
     [ date_row model
