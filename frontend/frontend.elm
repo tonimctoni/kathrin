@@ -6,8 +6,6 @@ import Json.Decode as Decode
 import Json.Encode as Encode
 import Array
 
---import SHA exposing ( sha1bytes, sha224bytes, sha256bytes, sha1sum, sha224sum, sha256sum)
-
 send_get_entries_request: Int -> Cmd Msg
 send_get_entries_request days_in_the_future =
   let
@@ -25,24 +23,61 @@ send_get_entries_request days_in_the_future =
 
 send_add_entry_request: Model -> Cmd Msg
 send_add_entry_request model =
-  case model.active_entry of
-    Nothing -> Cmd.none
-    Just active_entry ->
-      let
-        body =
-          [ ("days_in_the_future", Encode.int model.days_in_the_future)
-          , ("date", Encode.string model.entries.date)
-          , ("active_entry", Encode.int active_entry)
-          , ("name", Encode.string model.name)
-          , ("password", Encode.string model.password)
-          ]
-          |> Encode.object
-          |> Http.jsonBody
+  if model.name=="" then
+    Cmd.none
+  else if model.password=="" then
+    Cmd.none
+  else
+    case model.active_entry of
+      Nothing -> Cmd.none
+      Just active_entry ->
+        let
+          body =
+            [ ("days_in_the_future", Encode.int model.days_in_the_future)
+            , ("date", Encode.string model.entries.date)
+            , ("active_entry", Encode.int active_entry)
+            , ("name", Encode.string model.name)
+            , ("password", Encode.string model.password)
+            ]
+            |> Encode.object
+            |> Http.jsonBody
 
-        return_code_decoder = Decode.map ReturnCode
-          (Decode.field "Return_code" Decode.int)
-      in
-        Http.send ReturnCodeArrived (Http.post "/add_entry" (body) return_code_decoder)
+          return_code_decoder = Decode.map ReturnCode
+            (Decode.field "Return_code" Decode.int)
+        in
+          Http.send ReturnCodeArrived (Http.post "/add_entry" (body) return_code_decoder)
+
+
+send_remove_entry_request: Model -> Cmd Msg
+send_remove_entry_request model =
+  if model.password=="" then
+    Cmd.none
+  else
+    case model.active_entry of
+      Nothing -> Cmd.none
+      Just active_entry ->
+        case Array.get active_entry model.entries.entries of
+          Just "" -> Cmd.none
+          Nothing -> Cmd.none
+          Just name ->
+            let
+              body =
+                [ ("days_in_the_future", Encode.int model.days_in_the_future)
+                , ("date", Encode.string model.entries.date)
+                , ("active_entry", Encode.int active_entry)
+                , ("name", Encode.string name)
+                , ("password", Encode.string model.password)
+                ]
+                |> Encode.object
+                |> Http.jsonBody
+
+              return_code_decoder = Decode.map ReturnCode
+                (Decode.field "Return_code" Decode.int)
+            in
+              Http.send ReturnCodeArrived (Http.post "/remove_entry" (body) return_code_decoder)
+
+
+
 
 type alias ReturnCode =
   { return_code: Int
@@ -78,6 +113,7 @@ type Msg
   | SetPassword String
   | SendAddEntryRequest
   | ReturnCodeArrived (Result Http.Error ReturnCode)
+  | SendRemoveEntryRequest
 
 
 nav_bar: Html Msg
@@ -116,7 +152,18 @@ user_row model i =
   let
     add_entry_form: Model -> Html Msg
     add_entry_form model =
-      div [] [input [type_ "text", placeholder "Name", onInput SetName] [], input [type_ "password", placeholder "Password", onInput SetPassword] [], button [onClick SendAddEntryRequest] [text "OK"]]
+      div []
+        [ input [type_ "text", placeholder "Name", onInput SetName] []
+        , input [type_ "password", placeholder "Password", onInput SetPassword] []
+        , button [disabled (if model.name=="" || model.password=="" then True else False), onClick SendAddEntryRequest] [text "OK"]
+        ]
+    remove_entry_form: Model -> Html Msg
+    remove_entry_form model =
+      div [] 
+        [ input [type_ "password", placeholder "Password", onInput SetPassword] []
+        , button [disabled (if model.password=="" then True else False)
+        , onClick SendRemoveEntryRequest] [text "OK"]
+        ]
   in
     case Array.get i model.entries.entries of
       Just "" -> 
@@ -133,6 +180,7 @@ user_row model i =
           [ p [] [text ((toString i)++" - "++(toString (i+1))++":")]
           , strong [] [text name]
           , button [style [("margin-left", ".5cm")], onClick (if (model.active_entry==Just i) then (ShowEntryForm Nothing) else (ShowEntryForm (Just i)))] [span [class "glyphicon glyphicon-remove"] []]
+          , if model.active_entry==(Just i) then (remove_entry_form model) else (div [] [])
           ]
         ]
       Nothing ->
@@ -189,6 +237,7 @@ return_code_message model =
     4 -> div [class "row alert alert-danger"] [strong [] [text ("Error! (Reservation already exists)")]]
 
     20 -> div [class "row alert alert-success"] [strong [] [text ("Success! (Entry added)")]]
+    21 -> div [class "row alert alert-success"] [strong [] [text ("Success! (Entry removed)")]]
     _ -> div [] []
 
 view: Model -> Html Msg
@@ -214,18 +263,11 @@ update msg model =
     next_day = model.days_in_the_future+1
   in
     case msg of
+      SendRemoveEntryRequest -> (model, send_remove_entry_request model)
       SendAddEntryRequest -> (model, send_add_entry_request model)
       SetName name -> ({model | name=name}, Cmd.none)
       SetPassword password -> ({model | password=password}, Cmd.none)
       ShowEntryForm active_entry -> ({model | active_entry=active_entry, name="", password=""}, Cmd.none)
-        --case active_entry of
-        --  Nothing ->
-        --    ({model | active_entry=active_entry, name="", password=""}, Cmd.none)
-        --  Just active_entry ->
-        --    case Array.get active_entry model.entries.entries of
-        --      Just "" -> ({model | active_entry=(Just active_entry), name="", password=""}, Cmd.none)
-        --      Just name -> ({model | active_entry=(Just active_entry), name=name, password=""}, Cmd.none)
-        --      Nothing -> ({model | active_entry=(Just active_entry), name="", password=""}, Cmd.none)
       PreviousDay -> ({model | days_in_the_future=previous_day, return_code=0}, send_get_entries_request previous_day)
       NextDay -> ({model | days_in_the_future=next_day, return_code=0}, send_get_entries_request next_day)
       EntriesArrived (Ok entries) -> ({model | entries=entries, name="", password="", active_entry=Nothing, error=""}, Cmd.none)

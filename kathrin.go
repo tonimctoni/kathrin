@@ -24,6 +24,7 @@ const(
     root_file = "frontend/index.html"
     get_entries_address = "/get_entries"
     add_entry_address = "/add_entry"
+    remove_entry_address = "/remove_entry"
 )
 
 type Reservation struct{
@@ -253,27 +254,6 @@ func (u *Users) get_users_password(user string) (string, error){
     return "", errors.New("User with that name does not exist")
 }
 
-
-// func fun(){
-//     users:=[]User{
-//     User{"502", "toni", []Reservation{Reservation{2017, 9, 28, 4}}},
-//     User{"504", "sabrina", []Reservation{Reservation{2017, 9, 28, 4}, Reservation{2017, 9, 28, 5}, Reservation{2017, 9, 28, 6}}},
-//     }
-
-    // b, err := json.Marshal(users)
-    // if err!=nil{
-    //     panic(err.Error())
-    // }
-
-    // f, err:=os.Create("hello.json")
-    // if err!=nil{
-    //     panic(err.Error())
-    // }
-    // f.Write(b)
-    // f.Close()
-// }
-
-
 // TODO: always iterate over index range when changing stuff
 // TODO: Look at every function and make sure the map is updated correctly
 // TODO: syncrhonize it all (channels maybe?) (send pointer for return values?)
@@ -281,40 +261,6 @@ func (u *Users) get_users_password(user string) (string, error){
 // strings.ToLower("Gopher")
 // delete(m, "route")
 func main() {
-    // users,_:=from_file("asd.json")
-
-    // fmt.Println(users)
-    // sort.Sort(users)
-    // users.Sort()
-    // fmt.Println(users)
-
-    // // users.remove_old_reservations()
-    // // fmt.Println(users)
-    // // fmt.Println(users.get_reservation_string_user_name_map())
-    // // users.add_user("510", "felix")
-    // // users.remove_user("510")
-    // users.add_reservation("502", Reservation{2017, 8, 28, 10}, users.get_reservation_string_user_name_map())
-    // fmt.Println(users)
-    // users.add_user("zaphira", "zacks")
-    // users.add_user("felix", "von")
-    // users.add_user("peter", "pets")
-
-    // users.to_file("asd.json")
-    // return
-
-    // b, err := json.Marshal(logins)
-    // if err!=nil{
-    //     panic(err.Error())
-    // }
-
-    // f, err:=os.Create("hello.json")
-    // if err!=nil{
-    //     panic(err.Error())
-    // }
-    // f.Write(b)
-    // f.Close()
-
-
     users:=new_users()
     users.add_user("502", "password")
     users.add_reservation("502", Reservation{2017, 8, 30, 2})
@@ -323,28 +269,6 @@ func main() {
     users.add_user("504", "password")
     users.add_reservation("504", Reservation{2017, 8, 30, 4})
     fmt.Println(users)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     bootstrap_files:=[]string{
         "bootstrap/css/bootstrap.min.css",
@@ -470,7 +394,7 @@ func main() {
                 Return_code int
             }
 
-            // Get password, on error send errorcode
+            // Get password, on error send error code
             password, err:=users.get_users_password(add_entry_request_data.Name)
             if err!=nil{
                 to_send.Return_code=1
@@ -483,7 +407,7 @@ func main() {
                 return
             }
 
-            // See if password is correct, on error send errorcode
+            // See if password is correct, on error send error code
             if add_entry_request_data.Password!=password{
                 to_send.Return_code=2
                 json_to_send,err:=json.Marshal(to_send)
@@ -525,6 +449,113 @@ func main() {
 
             // If the program got here, the reservation was added correctly. Send good return code
             to_send.Return_code=20
+            json_to_send,err:=json.Marshal(to_send)
+            if err!=nil{
+                http.NotFound(w, r)
+                return
+            }
+            w.Write(json_to_send)
+            return
+
+        } else {
+            http.Error(w, "Request must be POST.", http.StatusBadRequest)
+            return
+        }
+    })
+
+    mux.HandleFunc(remove_entry_address, func (w http.ResponseWriter, r *http.Request){
+        if r.Method=="POST"{
+            type RemoveEntryRequestData struct{
+                Days_in_the_future int
+                Date string
+                Active_entry int
+                Name string
+                Password string
+            }
+
+            // Get request data
+            remove_entry_request_data, err:=func() (RemoveEntryRequestData, error){
+                remove_entry_request_data:=RemoveEntryRequestData{}
+                if r.Body==nil{
+                    return remove_entry_request_data, errors.New("No body")
+                }
+                buf:=new(bytes.Buffer)
+                buf.ReadFrom(r.Body)
+                r.Body.Close()
+
+                err:=json.Unmarshal(buf.Bytes(), &remove_entry_request_data)
+                if err!=nil{
+                    fmt.Println(err)
+                    return remove_entry_request_data, errors.New("Could not read request")
+                }
+
+                return remove_entry_request_data, nil
+            }()
+
+            if err!=nil{
+                http.NotFound(w, r)
+                return
+            }
+
+            var to_send struct{
+                Return_code int
+            }
+
+            // Get password, on error send error code
+            password, err:=users.get_users_password(remove_entry_request_data.Name)
+            if err!=nil{
+                to_send.Return_code=1
+                json_to_send,err:=json.Marshal(to_send)
+                if err!=nil{
+                    http.NotFound(w, r)
+                    return
+                }
+                w.Write(json_to_send)
+                return
+            }
+
+            // See if password is correct, on error send error code
+            if remove_entry_request_data.Password!=password{
+                to_send.Return_code=2
+                json_to_send,err:=json.Marshal(to_send)
+                if err!=nil{
+                    http.NotFound(w, r)
+                    return
+                }
+                w.Write(json_to_send)
+                return
+            }
+
+            // See if dates are inconsistent
+            now:=time.Now().AddDate(0,0,remove_entry_request_data.Days_in_the_future)
+            year, month, day:=now.Date()
+            weekday:=now.Weekday()
+            if fmt.Sprintf("%s, %d of %s", weekday.String(), day, month.String())!=remove_entry_request_data.Date{
+                to_send.Return_code=3
+                json_to_send,err:=json.Marshal(to_send)
+                if err!=nil{
+                    http.NotFound(w, r)
+                    return
+                }
+                w.Write(json_to_send)
+                return
+            }
+
+            // Try to add the actual reservation
+            err=users.remove_reservation(remove_entry_request_data.Name, Reservation{year, int(month), day, remove_entry_request_data.Active_entry})
+            if err!=nil{
+                to_send.Return_code=4
+                json_to_send,err:=json.Marshal(to_send)
+                if err!=nil{
+                    http.NotFound(w, r)
+                    return
+                }
+                w.Write(json_to_send)
+                return
+            }
+
+            // If the program got here, the reservation was added correctly. Send good return code
+            to_send.Return_code=21
             json_to_send,err:=json.Marshal(to_send)
             if err!=nil{
                 http.NotFound(w, r)
