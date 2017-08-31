@@ -10,28 +10,33 @@ import "strings"
 import "errors"
 import "sync"
 import "os"
-// import "bytes"
 import "sort"
 
 const(
     admin_user_name = "admin"
     user_file = "data/users.json"
+    logfile_filename = "logfile.log"
+
     root_address = "/"
     root_file = "frontend/index.html"
+
     change_password_address = "/change_password"
     change_password_file = "frontend/change_password.html"
+
     see_all_address = "/see_all"
-    remove_old_address = "/remove_old"
+    remove_old_addresses = "/remove_old"
     admin_file = "frontend/admin.html"
+
     get_entries_address = "/get_entries"
     add_entry_address = "/add_entry"
     remove_entry_address = "/remove_entry"
+
     character_whitelist = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
     max_password_length = 32
     min_password_length = 4
-    logfile_filename = "logfile.log"
 )
 
+// Represents an entry: a timeslot that may be reserved for a user
 type Reservation struct{
     Year int
     Month int
@@ -47,12 +52,14 @@ func (r *Reservation) Equals(other Reservation) bool{
     return r.Year==other.Year && r.Month==other.Month && r.Day==other.Day && r.Slot==other.Slot
 }
 
+// Represents a user and all his entries (reservations)
 type User struct{
     Name string
     Password string
     Reservations []Reservation
 }
 
+// Represents all users
 type Users struct{
     users []User
     reservation_to_user map[Reservation]string
@@ -373,6 +380,7 @@ func main() {
         http.ServeFile(w, r, root_file)
     })
 
+    // Sends all enties (reservations) of a certain day to the frontend
     mux.HandleFunc(get_entries_address, func (w http.ResponseWriter, r *http.Request){
         if r.Method=="POST"{
             days_in_the_future:=func() int{
@@ -427,6 +435,7 @@ func main() {
         }
     })
 
+    // Processes request to add an entry (reservation)
     mux.HandleFunc(add_entry_address, func (w http.ResponseWriter, r *http.Request){
         if r.Method=="POST"{
             type AddEntryRequestData struct{
@@ -550,6 +559,7 @@ func main() {
         }
     })
 
+    // Processes request to remove an entry (reservation)
     mux.HandleFunc(remove_entry_address, func (w http.ResponseWriter, r *http.Request){
         if r.Method=="POST"{
             type RemoveEntryRequestData struct{
@@ -566,9 +576,7 @@ func main() {
                 if r.Body==nil{
                     return remove_entry_request_data, errors.New("No body")
                 }
-                // buf:=new(bytes.Buffer)
-                // buf.ReadFrom(r.Body)
-                // r.Body.Close()
+
                 content, err:=ioutil.ReadAll(r.Body)
                 r.Body.Close()
                 if r.Body==nil{
@@ -674,6 +682,7 @@ func main() {
         }
     })
 
+    // Processes request to change a users password
     mux.HandleFunc(change_password_address, func (w http.ResponseWriter, r *http.Request){
         if r.Method=="GET"{
             http.ServeFile(w, r, change_password_file)
@@ -684,16 +693,19 @@ func main() {
             new_password1:=r.FormValue("new_password1")
             new_password2:=r.FormValue("new_password2")
 
+            // If the new password and the new password re-entry are inconsistent
             if new_password1!=new_password2{
                 http.Error(w, "Must entry the same password in both \"New Password\" fields", http.StatusBadRequest)
                 return
             }
 
+            // If the new password's length is not within bounds
             if len(new_password1)<min_password_length || len(new_password1)>max_password_length{
                 http.Error(w, fmt.Sprintf("New password's length must be between %d and %d", min_password_length, max_password_length), http.StatusBadRequest)
                 return
             }
 
+            // Chech wheter only whitelisted characters are contained in the new password
             password_has_whitelisted_chars_only:=func() bool{
                 for _,password_char:=range new_password1{
                     if !strings.ContainsAny(string(password_char), character_whitelist){
@@ -702,13 +714,14 @@ func main() {
                 }
                 return true
             }()
+            // If there are non-whitelisted characters in the new password
             if !password_has_whitelisted_chars_only{
                 http.Error(w, fmt.Sprintf("New password may only have allowed characters (%s)", character_whitelist), http.StatusBadRequest)
                 return
             }
 
+            // Do the actual password change
             err:=users.change_password(name, password, new_password1)
-
             if err!=nil{
                 http.Error(w, err.Error(), http.StatusBadRequest)
                 return
@@ -729,6 +742,7 @@ func main() {
         }
     })
 
+    // Processes request from admin to see all data (including all passwords)
     mux.HandleFunc(see_all_address, func (w http.ResponseWriter, r *http.Request){
         if r.Method=="GET"{
             http.ServeFile(w, r, admin_file)
@@ -741,11 +755,13 @@ func main() {
                 return
             }
 
+            // If the enetered password is not the admin's
             if admin_password_!=admin_password{
                 http.Error(w, "Wrong password", http.StatusUnauthorized)
                 return
             }
 
+            // Get all data (including all passwords) in readable json format
             json_users,err:=users.as_json()
             if err!=nil{
                 http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -761,7 +777,8 @@ func main() {
         }
     })
 
-    mux.HandleFunc(remove_old_address, func (w http.ResponseWriter, r *http.Request){
+    // Processes request from admin to remove old entries
+    mux.HandleFunc(remove_old_addresses, func (w http.ResponseWriter, r *http.Request){
         if r.Method=="GET"{
             http.ServeFile(w, r, admin_file)
             return

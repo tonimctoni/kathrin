@@ -144,11 +144,11 @@ date_row model =
     right_button_class = "btn btn-default"
   in
     div [class "row"]
-    [ div [class "col-md-1"] [button [class left_button_class, onClick PreviousDay, style [("margin", ".25cm")]] [span [class "glyphicon glyphicon-menu-left"] [], text "Left"]]
+    [ div [class "col-md-1"] [button [class left_button_class, onClick PreviousDay, style [("margin", ".25cm")]] [span [class "glyphicon glyphicon-menu-left"] [], text "Last"]]
     --, div [class "col-md-2"] []
     , div [class "col-md-3"] [h3 [style [("float", "centar")]] [text model.entries.date]]
     --, div [class "col-md-2"] []
-    , div [class "col-md-1"] [button [class right_button_class, onClick NextDay, style [("margin", ".25cm"), ("float", "left")]] [text "Right", span [class "glyphicon glyphicon-menu-right"] []]]
+    , div [class "col-md-1"] [button [class right_button_class, onClick NextDay, style [("margin", ".25cm"), ("float", "left")]] [text "Next", span [class "glyphicon glyphicon-menu-right"] []]]
     ]
 
 
@@ -221,8 +221,6 @@ user_rows model =
   , user_row model 21
   , user_row model 22
   , user_row model 23
-  --, user_row model 24
-  --, user_row model 25
   ]
 
 error_message: Model -> Html Msg
@@ -250,8 +248,6 @@ return_code_message model =
 view: Model -> Html Msg
 view model =
   div []
-  --, node "script" [ href "/bootstrap/js/bootstrap.min.js"] []
-  --[ node "link" [ rel "stylesheet", href "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"] []
   [ node "link" [ rel "stylesheet", href "/bootstrap/css/bootstrap.min.css"] []
   , node "script" [ src "/bootstrap/js/jquery.min.js"] []
   , node "script" [ src "/bootstrap/js/bootstrap.min.js"] []
