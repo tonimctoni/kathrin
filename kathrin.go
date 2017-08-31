@@ -6,16 +6,11 @@ import "net/http"
 import "time"
 import "fmt"
 import "io/ioutil"
-// import "crypto/sha256"
-// import "crypto/sha512"
-// import "crypto/md5"
 import "strings"
 import "errors"
-// import "strconv"
 import "sync"
-// import "crypto/rand"
 import "os"
-import "bytes"
+// import "bytes"
 import "sort"
 
 const(
@@ -25,15 +20,16 @@ const(
     root_file = "frontend/index.html"
     change_password_address = "/change_password"
     change_password_file = "frontend/change_password.html"
-    admin_address = "/admin"
-    admin_file = "frontend/admin.html"
+    see_all_address = "/see_all"
     remove_old_address = "/remove_old"
+    admin_file = "frontend/admin.html"
     get_entries_address = "/get_entries"
     add_entry_address = "/add_entry"
     remove_entry_address = "/remove_entry"
     character_whitelist = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
     max_password_length = 32
     min_password_length = 4
+    logfile_filename = "logfile.log"
 )
 
 type Reservation struct{
@@ -43,9 +39,9 @@ type Reservation struct{
     Slot int
 }
 
-// func (r *Reservation) String() string{
-//     return fmt.Sprintf("%d.%d.%d(%d)", r.Day, r.Month, r.Year, r.Slot)
-// }
+func (r *Reservation) String() string{
+    return fmt.Sprintf("%d.%d.%d(%d)", r.Day, r.Month, r.Year, r.Slot)
+}
 
 func (r *Reservation) Equals(other Reservation) bool{
     return r.Year==other.Year && r.Month==other.Month && r.Day==other.Day && r.Slot==other.Slot
@@ -307,12 +303,7 @@ func (u *Users) change_password(user, password, new_password string) error{
     return errors.New("User does not exist")
 }
 
-// TODO: always iterate over index range when changing stuff
-// TODO: Look at every function and make sure the map is updated correctly
-// TODO: syncrhonize it all (channels maybe?) (send pointer for return values?)
-// TODO: when a user is removed, all his reservations should be removed from map
-// strings.ToLower("Gopher")
-// delete(m, "route")
+// TODO: add https
 func main() {
     // users:=new_users()
     // rooms:=[]string{
@@ -330,20 +321,25 @@ func main() {
     // fmt.Println(users.users)
     // users.to_file(user_file)
     // return
+
+    logfile_f, err := os.OpenFile(logfile_filename, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+    if err != nil {
+        log.Fatal(err)
+    }
+    defer logfile_f.Close()
+    log.SetOutput(logfile_f)
+
     users, err:=from_file(user_file)
     if err!=nil{
-        panic(err)
+        log.Fatal(err)
     }
-
     users.add_user(admin_user_name, "password")
     users.Sort()
 
-    users.add_reservation("502", Reservation{2017,8,30,0})
-
-    fmt.Println(users.users)
-
     bootstrap_files:=[]string{
         "bootstrap/css/bootstrap.min.css",
+        "bootstrap/js/bootstrap.min.js",
+        "bootstrap/js/jquery.min.js",
         "bootstrap/fonts/glyphicons-halflings-regular.ttf",
         "bootstrap/fonts/glyphicons-halflings-regular.woff",
         "bootstrap/fonts/glyphicons-halflings-regular.woff2",
@@ -383,16 +379,18 @@ func main() {
                 if r.Body==nil{
                     return 0
                 }
-                buf:=new(bytes.Buffer)
-                buf.ReadFrom(r.Body)
+
+                content, err:=ioutil.ReadAll(r.Body)
                 r.Body.Close()
+                if r.Body==nil{
+                    return 0
+                }
 
                 var Days_in_the_future struct{
                     Days_in_the_future int
                 }
 
-                // var Days_in_the_future days_in_the_future
-                err:=json.Unmarshal(buf.Bytes(), &Days_in_the_future)
+                err=json.Unmarshal(content, &Days_in_the_future)
                 if err!=nil{
                     return 0
                 }
@@ -445,13 +443,16 @@ func main() {
                 if r.Body==nil{
                     return add_entry_request_data, errors.New("No body")
                 }
-                buf:=new(bytes.Buffer)
-                buf.ReadFrom(r.Body)
-                r.Body.Close()
 
-                err:=json.Unmarshal(buf.Bytes(), &add_entry_request_data)
+                content, err:=ioutil.ReadAll(r.Body)
+                r.Body.Close()
+                if r.Body==nil{
+                    return add_entry_request_data, errors.New("Could not read body")
+                }
+
+                err=json.Unmarshal(content, &add_entry_request_data)
                 if err!=nil{
-                    fmt.Println(err)
+                    log.Println(err)
                     return add_entry_request_data, errors.New("Could not read request")
                 }
 
@@ -511,7 +512,8 @@ func main() {
             }
 
             // Try to add the actual reservation
-            err=users.add_reservation(add_entry_request_data.Name, Reservation{year, int(month), day, add_entry_request_data.Active_entry})
+            new_reservation:=Reservation{year, int(month), day, add_entry_request_data.Active_entry}
+            err=users.add_reservation(add_entry_request_data.Name, new_reservation)
             if err!=nil{
                 to_send.Return_code=4
                 json_to_send,err:=json.Marshal(to_send)
@@ -524,7 +526,12 @@ func main() {
                 return
             }
 
-            users.to_file(user_file)
+            // Save changes to file
+            err=users.to_file(user_file)
+            if err!=nil{
+                log.Println(err)
+            }
+            log.Println("Entry added:", add_entry_request_data.Name, new_reservation.String())
 
             // If the program got here, the reservation was added correctly. Send good return code
             to_send.Return_code=20
@@ -559,13 +566,18 @@ func main() {
                 if r.Body==nil{
                     return remove_entry_request_data, errors.New("No body")
                 }
-                buf:=new(bytes.Buffer)
-                buf.ReadFrom(r.Body)
+                // buf:=new(bytes.Buffer)
+                // buf.ReadFrom(r.Body)
+                // r.Body.Close()
+                content, err:=ioutil.ReadAll(r.Body)
                 r.Body.Close()
+                if r.Body==nil{
+                    return remove_entry_request_data, errors.New("Could not read body")
+                }
 
-                err:=json.Unmarshal(buf.Bytes(), &remove_entry_request_data)
+                err=json.Unmarshal(content, &remove_entry_request_data)
                 if err!=nil{
-                    fmt.Println(err)
+                    log.Println(err)
                     return remove_entry_request_data, errors.New("Could not read request")
                 }
 
@@ -624,7 +636,8 @@ func main() {
             }
 
             // Try to add the actual reservation
-            err=users.remove_reservation(remove_entry_request_data.Name, Reservation{year, int(month), day, remove_entry_request_data.Active_entry})
+            reservation_to_remove:=Reservation{year, int(month), day, remove_entry_request_data.Active_entry}
+            err=users.remove_reservation(remove_entry_request_data.Name, reservation_to_remove)
             if err!=nil{
                 to_send.Return_code=4
                 json_to_send,err:=json.Marshal(to_send)
@@ -637,7 +650,12 @@ func main() {
                 return
             }
 
-            users.to_file(user_file)
+            // Save changes to file
+            err=users.to_file(user_file)
+            if err!=nil{
+                log.Println(err)
+            }
+            log.Println("Entry removed:", remove_entry_request_data.Name, reservation_to_remove.String())
 
             // If the program got here, the reservation was removed correctly. Send good return code
             to_send.Return_code=21
@@ -671,10 +689,12 @@ func main() {
                 return
             }
 
-            is_password_ok:=func() bool{
-                if len(new_password1)<min_password_length || len(new_password1)>max_password_length{
-                    return false
-                }
+            if len(new_password1)<min_password_length || len(new_password1)>max_password_length{
+                http.Error(w, fmt.Sprintf("New password's length must be between %d and %d", min_password_length, max_password_length), http.StatusBadRequest)
+                return
+            }
+
+            password_has_whitelisted_chars_only:=func() bool{
                 for _,password_char:=range new_password1{
                     if !strings.ContainsAny(string(password_char), character_whitelist){
                         return false
@@ -682,9 +702,8 @@ func main() {
                 }
                 return true
             }()
-
-            if !is_password_ok{
-                http.Error(w, fmt.Sprintf("New password may only have allowed characters (%s), and its length must be between %d and %d", character_whitelist, min_password_length, max_password_length), http.StatusBadRequest)
+            if !password_has_whitelisted_chars_only{
+                http.Error(w, fmt.Sprintf("New password may only have allowed characters (%s)", character_whitelist), http.StatusBadRequest)
                 return
             }
 
@@ -695,18 +714,22 @@ func main() {
                 return
             }
 
-            users.to_file(user_file)
+            // Save changes to file
+            err=users.to_file(user_file)
+            if err!=nil{
+                log.Println(err)
+            }
+            log.Println("Password changed by user:", name)
 
             w.Write([]byte("Password changed successfully"))
             return
         } else {
-            fmt.Println("asd")
             http.Error(w, "Request must be GET or POST.", http.StatusBadRequest)
             return
         }
     })
 
-    mux.HandleFunc(admin_address, func (w http.ResponseWriter, r *http.Request){
+    mux.HandleFunc(see_all_address, func (w http.ResponseWriter, r *http.Request){
         if r.Method=="GET"{
             http.ServeFile(w, r, admin_file)
             return
@@ -733,19 +756,45 @@ func main() {
             w.Write(json_users)
             return
         } else {
-            fmt.Println("asd")
             http.Error(w, "Request must be GET or POST.", http.StatusBadRequest)
             return
         }
     })
 
     mux.HandleFunc(remove_old_address, func (w http.ResponseWriter, r *http.Request){
-        users.remove_old_reservations()
-        w.Write([]byte("Old entries removed"))
+        if r.Method=="GET"{
+            http.ServeFile(w, r, admin_file)
+            return
+        } else if r.Method=="POST"{
+            admin_password:=r.FormValue("admin_password")
+            admin_password_, err:=users.get_users_password(admin_user_name)
+            if err!=nil{
+                http.Error(w, err.Error(), http.StatusInternalServerError)
+                return
+            }
+
+            if admin_password_!=admin_password{
+                http.Error(w, "Wrong password", http.StatusUnauthorized)
+                return
+            }
+
+            users.remove_old_reservations()
+            // Save changes to file
+            err=users.to_file(user_file)
+            if err!=nil{
+                log.Println(err)
+            }
+            log.Println("Old entries removed")
+            w.Write([]byte("Old entries removed"))
+            return
+        } else {
+            http.Error(w, "Request must be GET or POST.", http.StatusBadRequest)
+            return
+        }
     })
 
-    log.Println("Start server")
+    log.Println("Server started")
     if err:=http.ListenAndServe(":8000", mux);err!=nil{
-        log.Println(err)
+        log.Fatal(err)
     }
 }

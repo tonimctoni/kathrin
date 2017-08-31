@@ -126,6 +126,13 @@ nav_bar =
     , ul [class "nav navbar-nav"]
       [ li [class "active"] [a [href "/"] [text "Plan"]]
       , li [] [a [href "/change_password"] [text "Change Password"]]
+      , li [class "dropdown"]
+        [ a [class "dropdown-toggle", attribute "data-toggle" "dropdown", href "#"] [text "Admin"]
+        ,  ul [class "dropdown-menu"]
+          [ li [] [a [href "/see_all"] [text "See All"]]
+          , li [] [a [href "/remove_old"] [text "Remove Old Entries"]]
+          ]
+        ]
       ]
     ]
   ]
@@ -243,8 +250,11 @@ return_code_message model =
 view: Model -> Html Msg
 view model =
   div []
+  --, node "script" [ href "/bootstrap/js/bootstrap.min.js"] []
   --[ node "link" [ rel "stylesheet", href "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"] []
   [ node "link" [ rel "stylesheet", href "/bootstrap/css/bootstrap.min.css"] []
+  , node "script" [ src "/bootstrap/js/jquery.min.js"] []
+  , node "script" [ src "/bootstrap/js/bootstrap.min.js"] []
   , nav_bar
   , div [class "container", style [("background-color", "#D0D0D0"), ("border-radius", "6px")]]
     [ date_row model

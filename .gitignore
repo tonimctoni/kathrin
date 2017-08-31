@@ -3,5 +3,4 @@ data
 frontend/elm-stuff
 frontend/elm-package.json
 frontend/index.html
-asd.json
-test
+logfile.log
