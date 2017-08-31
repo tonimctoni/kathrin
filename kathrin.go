@@ -19,12 +19,21 @@ import "bytes"
 import "sort"
 
 const(
+    admin_user_name = "admin"
     user_file = "data/users.json"
     root_address = "/"
     root_file = "frontend/index.html"
+    change_password_address = "/change_password"
+    change_password_file = "frontend/change_password.html"
+    admin_address = "/admin"
+    admin_file = "frontend/admin.html"
+    remove_old_address = "/remove_old"
     get_entries_address = "/get_entries"
     add_entry_address = "/add_entry"
     remove_entry_address = "/remove_entry"
+    character_whitelist = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    max_password_length = 32
+    min_password_length = 4
 )
 
 type Reservation struct{
@@ -69,6 +78,8 @@ func (u Users) Swap(i, j int){
 }
 
 func (u Users) Sort(){
+    u.lock.Lock()
+    defer u.lock.Unlock()
     sort.Sort(u)
 }
 
@@ -114,6 +125,18 @@ func (u *Users) to_file(filename string) error{
     f.Write(b)
     f.Close()
     return nil
+}
+
+func (u *Users) as_json() ([]byte, error){
+    u.lock.RLock()
+    defer u.lock.RUnlock()
+
+    b, err := json.MarshalIndent(u.users, "", "    ")
+    if err!=nil{
+        return []byte{}, err
+    }
+
+    return b, nil
 }
 
 func (u *Users) remove_old_reservations(){
@@ -231,6 +254,15 @@ func (u *Users) remove_reservation(name string, reservation Reservation) error{
     return nil
 }
 
+func (u *Users) remove_all_reservations(){
+    u.lock.Lock()
+    defer u.lock.Unlock()
+
+    for i:=0; i<len(u.users); i++{
+        u.users[i].Reservations=[]Reservation{}
+    }
+}
+
 func (u *Users) get_reservations_on_day(reservation_day Reservation) [24]string{
     u.lock.RLock()
     defer u.lock.RUnlock()
@@ -245,6 +277,9 @@ func (u *Users) get_reservations_on_day(reservation_day Reservation) [24]string{
 }
 
 func (u *Users) get_users_password(user string) (string, error){
+    u.lock.RLock()
+    defer u.lock.RUnlock()
+
     for _,_user:=range u.users{
         if _user.Name==user{
             return _user.Password, nil
@@ -252,6 +287,24 @@ func (u *Users) get_users_password(user string) (string, error){
     }
 
     return "", errors.New("User with that name does not exist")
+}
+
+func (u *Users) change_password(user, password, new_password string) error{
+    u.lock.Lock()
+    defer u.lock.Unlock()
+
+    for i:=0; i<len(u.users); i++{
+        if u.users[i].Name==user{
+            if u.users[i].Password!=password{
+                return errors.New("Incorrect password")
+            }
+
+            u.users[i].Password=new_password
+            return nil
+        }
+    }
+
+    return errors.New("User does not exist")
 }
 
 // TODO: always iterate over index range when changing stuff
@@ -262,17 +315,30 @@ func (u *Users) get_users_password(user string) (string, error){
 // delete(m, "route")
 func main() {
     // users:=new_users()
-    // users.add_user("502", "password")
-    // users.add_reservation("502", Reservation{2017, 8, 30, 2})
-    // users.add_user("503", "password")
-    // users.add_reservation("503", Reservation{2017, 8, 30, 3})
-    // users.add_user("504", "password")
-    // users.add_reservation("504", Reservation{2017, 8, 30, 4})
-    // fmt.Println(users)
+    // rooms:=[]string{
+    //     "101","102","103","104","105","106","107","108","109","110",
+    //     "201","202","203","204","205","206","207","208","209","210",
+    //     "301","302","303","304","305","306","307","308","309","310",
+    //     "401","402","403","404","405","406","407","408","409","410",
+    //     "501","502","503","504","505","506","507","508","509","510",
+    // }
+
+    // for _,room:=range rooms{
+    //     users.add_user(room, "password")
+    // }
+
+    // fmt.Println(users.users)
+    // users.to_file(user_file)
+    // return
     users, err:=from_file(user_file)
     if err!=nil{
         panic(err)
     }
+
+    users.add_user(admin_user_name, "password")
+    users.Sort()
+
+    users.add_reservation("502", Reservation{2017,8,30,0})
 
     fmt.Println(users.users)
 
@@ -354,6 +420,7 @@ func main() {
                 return
             }
 
+            w.Header().Set("Content-Type", "application/json")
             w.Write(json_entries_data)
 
         } else {
@@ -409,6 +476,7 @@ func main() {
                     http.NotFound(w, r)
                     return
                 }
+                w.Header().Set("Content-Type", "application/json")
                 w.Write(json_to_send)
                 return
             }
@@ -421,6 +489,7 @@ func main() {
                     http.NotFound(w, r)
                     return
                 }
+                w.Header().Set("Content-Type", "application/json")
                 w.Write(json_to_send)
                 return
             }
@@ -436,6 +505,7 @@ func main() {
                     http.NotFound(w, r)
                     return
                 }
+                w.Header().Set("Content-Type", "application/json")
                 w.Write(json_to_send)
                 return
             }
@@ -449,6 +519,7 @@ func main() {
                     http.NotFound(w, r)
                     return
                 }
+                w.Header().Set("Content-Type", "application/json")
                 w.Write(json_to_send)
                 return
             }
@@ -462,6 +533,7 @@ func main() {
                 http.NotFound(w, r)
                 return
             }
+            w.Header().Set("Content-Type", "application/json")
             w.Write(json_to_send)
             return
 
@@ -530,6 +602,7 @@ func main() {
                     http.NotFound(w, r)
                     return
                 }
+                w.Header().Set("Content-Type", "application/json")
                 w.Write(json_to_send)
                 return
             }
@@ -545,6 +618,7 @@ func main() {
                     http.NotFound(w, r)
                     return
                 }
+                w.Header().Set("Content-Type", "application/json")
                 w.Write(json_to_send)
                 return
             }
@@ -558,6 +632,7 @@ func main() {
                     http.NotFound(w, r)
                     return
                 }
+                w.Header().Set("Content-Type", "application/json")
                 w.Write(json_to_send)
                 return
             }
@@ -571,6 +646,7 @@ func main() {
                 http.NotFound(w, r)
                 return
             }
+            w.Header().Set("Content-Type", "application/json")
             w.Write(json_to_send)
             return
 
@@ -578,6 +654,94 @@ func main() {
             http.Error(w, "Request must be POST.", http.StatusBadRequest)
             return
         }
+    })
+
+    mux.HandleFunc(change_password_address, func (w http.ResponseWriter, r *http.Request){
+        if r.Method=="GET"{
+            http.ServeFile(w, r, change_password_file)
+            return
+        } else if r.Method=="POST"{
+            name:=r.FormValue("name")
+            password:=r.FormValue("password")
+            new_password1:=r.FormValue("new_password1")
+            new_password2:=r.FormValue("new_password2")
+
+            if new_password1!=new_password2{
+                http.Error(w, "Must entry the same password in both \"New Password\" fields", http.StatusBadRequest)
+                return
+            }
+
+            is_password_ok:=func() bool{
+                if len(new_password1)<min_password_length || len(new_password1)>max_password_length{
+                    return false
+                }
+                for _,password_char:=range new_password1{
+                    if !strings.ContainsAny(string(password_char), character_whitelist){
+                        return false
+                    }
+                }
+                return true
+            }()
+
+            if !is_password_ok{
+                http.Error(w, fmt.Sprintf("New password may only have allowed characters (%s), and its length must be between %d and %d", character_whitelist, min_password_length, max_password_length), http.StatusBadRequest)
+                return
+            }
+
+            err:=users.change_password(name, password, new_password1)
+
+            if err!=nil{
+                http.Error(w, err.Error(), http.StatusBadRequest)
+                return
+            }
+
+            users.to_file(user_file)
+
+            w.Write([]byte("Password changed successfully"))
+            return
+        } else {
+            fmt.Println("asd")
+            http.Error(w, "Request must be GET or POST.", http.StatusBadRequest)
+            return
+        }
+    })
+
+    mux.HandleFunc(admin_address, func (w http.ResponseWriter, r *http.Request){
+        if r.Method=="GET"{
+            http.ServeFile(w, r, admin_file)
+            return
+        } else if r.Method=="POST"{
+            admin_password:=r.FormValue("admin_password")
+            admin_password_, err:=users.get_users_password(admin_user_name)
+            if err!=nil{
+                http.Error(w, err.Error(), http.StatusInternalServerError)
+                return
+            }
+
+            if admin_password_!=admin_password{
+                http.Error(w, "Wrong password", http.StatusUnauthorized)
+                return
+            }
+
+            json_users,err:=users.as_json()
+            if err!=nil{
+                http.Error(w, err.Error(), http.StatusInternalServerError)
+                return
+            }
+
+            w.Header().Set("Content-Type", "application/json")
+            w.Write(json_users)
+            return
+        } else {
+            fmt.Println("asd")
+            http.Error(w, "Request must be GET or POST.", http.StatusBadRequest)
+            return
+        }
+    })
+
+    mux.HandleFunc(remove_old_address, func (w http.ResponseWriter, r *http.Request){
+        users.remove_old_reservations()
+        w.Write([]byte("Old entries removed"))
     })
 
     log.Println("Start server")

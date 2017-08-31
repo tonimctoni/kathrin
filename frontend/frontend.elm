@@ -125,7 +125,7 @@ nav_bar =
       ]
     , ul [class "nav navbar-nav"]
       [ li [class "active"] [a [href "/"] [text "Plan"]]
-      , li [] [a [href "/add_entries"] [text "All Entries"]]
+      , li [] [a [href "/change_password"] [text "Change Password"]]
       ]
     ]
   ]
@@ -232,7 +232,7 @@ return_code_message model =
   case model.return_code of
     0 -> div [] []
     1 -> div [class "row alert alert-danger"] [strong [] [text ("Error! (Username does not exist)")]]
-    2 -> div [class "row alert alert-danger"] [strong [] [text ("Error! (Wrong passwort)")]]
+    2 -> div [class "row alert alert-danger"] [strong [] [text ("Error! (Wrong password)")]]
     3 -> div [class "row alert alert-danger"] [strong [] [text ("Error! (Inconsistent date)")]]
     4 -> div [class "row alert alert-danger"] [strong [] [text ("Error! (Reservation already exists)")]]
 
