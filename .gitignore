@@ -4,3 +4,5 @@ frontend/elm-stuff
 frontend/elm-package.json
 frontend/index.html
 logfile.log
+main
+users.json

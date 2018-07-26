@@ -239,7 +239,7 @@ return_code_message model =
     1 -> div [class "row alert alert-danger"] [strong [] [text ("Error! (Username does not exist)")]]
     2 -> div [class "row alert alert-danger"] [strong [] [text ("Error! (Wrong password)")]]
     3 -> div [class "row alert alert-danger"] [strong [] [text ("Error! (Inconsistent date)")]]
-    4 -> div [class "row alert alert-danger"] [strong [] [text ("Error! (Reservation already exists)")]]
+    4 -> div [class "row alert alert-danger"] [strong [] [text ("Error! (Entry already exists)")]]
 
     20 -> div [class "row alert alert-success"] [strong [] [text ("Success! (Entry added)")]]
     21 -> div [class "row alert alert-success"] [strong [] [text ("Success! (Entry removed)")]]
