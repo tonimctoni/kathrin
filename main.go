@@ -23,12 +23,12 @@ func add_file_to_mux_at_path(mux *http.ServeMux, webpath string, filepath string
 
 func (u *Users) http_get_entries(w http.ResponseWriter, r *http.Request){
     var to_get struct{
-        Days_in_the_future int
+        Days_in_the_future int `json:"days_in_the_future"`
     }
 
     var to_send struct{
-        Date string
-        Entries [24] string
+        Date string `json:"date"`
+        Entries [24] string `json:"entries"`
     }
 
     if r.Method!="POST"{
@@ -55,15 +55,15 @@ func (u *Users) http_get_entries(w http.ResponseWriter, r *http.Request){
 
 func (u *Users) http_add_entry(w http.ResponseWriter, r *http.Request){
     var to_get struct{
-        Days_in_the_future int
-        Date string
-        Active_entry int
-        Name string
-        Password string
+        Days_in_the_future int `json:"days_in_the_future"`
+        Date string `json:"date"`
+        Active_entry int `json:"active_entry"`
+        Name string `json:"name"`
+        Password string `json:"password"`
     }
 
     var to_send struct{
-        Return_code int
+        Return_code int `json:"return_code"`
     }
 
     if r.Method!="POST"{
@@ -130,15 +130,15 @@ func (u *Users) http_add_entry(w http.ResponseWriter, r *http.Request){
 
 func (u *Users) http_remove_entry(w http.ResponseWriter, r *http.Request){
     var to_get struct{
-        Days_in_the_future int
-        Date string
-        Active_entry int
-        Name string
-        Password string
+        Days_in_the_future int `json:"days_in_the_future"`
+        Date string `json:"date"`
+        Active_entry int `json:"active_entry"`
+        Name string `json:"name"`
+        Password string `json:"password"`
     }
 
     var to_send struct{
-        Return_code int
+        Return_code int `json:"return_code"`
     }
 
     if r.Method!="POST"{

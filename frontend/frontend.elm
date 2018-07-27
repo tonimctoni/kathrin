@@ -1,10 +1,21 @@
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick, onInput)
+import Html.Events exposing (onClick, onInput, on, keyCode)
 import Http
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Array
+
+onEnter : Msg -> Attribute Msg
+onEnter msg =
+  let
+    isEnter code =
+      if code == 13 then
+        Decode.succeed msg
+      else
+        Decode.fail "not ENTER"
+  in
+    on "keydown" (Decode.andThen isEnter keyCode)
 
 send_get_entries_request: Int -> Cmd Msg
 send_get_entries_request days_in_the_future =
@@ -15,8 +26,8 @@ send_get_entries_request days_in_the_future =
       |> Http.jsonBody
 
     entries_decoder = Decode.map2 Entries
-      (Decode.field "Date" Decode.string)
-      (Decode.field "Entries" (Decode.array Decode.string))
+      (Decode.field "date" Decode.string)
+      (Decode.field "entries" (Decode.array Decode.string))
   in
     Http.send EntriesArrived (Http.post "/get_entries" (body) entries_decoder)
 
@@ -43,7 +54,7 @@ send_add_entry_request model =
             |> Http.jsonBody
 
           return_code_decoder = Decode.map ReturnCode
-            (Decode.field "Return_code" Decode.int)
+            (Decode.field "return_code" Decode.int)
         in
           Http.send ReturnCodeArrived (Http.post "/add_entry" (body) return_code_decoder)
 
@@ -72,7 +83,7 @@ send_remove_entry_request model =
                 |> Http.jsonBody
 
               return_code_decoder = Decode.map ReturnCode
-                (Decode.field "Return_code" Decode.int)
+                (Decode.field "return_code" Decode.int)
             in
               Http.send ReturnCodeArrived (Http.post "/remove_entry" (body) return_code_decoder)
 
@@ -161,13 +172,13 @@ user_row model i =
     add_entry_form model =
       div []
         [ input [type_ "text", placeholder "Name", onInput SetName] []
-        , input [type_ "password", placeholder "Password", onInput SetPassword] []
+        , input [type_ "password", placeholder "Password", onInput SetPassword, onEnter SendAddEntryRequest] []
         , button [disabled (if model.name=="" || model.password=="" then True else False), onClick SendAddEntryRequest] [text "OK"]
         ]
     remove_entry_form: Model -> Html Msg
     remove_entry_form model =
       div [] 
-        [ input [type_ "password", placeholder "Password", onInput SetPassword] []
+        [ input [type_ "password", placeholder "Password", onInput SetPassword, onEnter SendRemoveEntryRequest] []
         , button [disabled (if model.password=="" then True else False)
         , onClick SendRemoveEntryRequest] [text "OK"]
         ]
@@ -196,32 +207,7 @@ user_row model i =
 
 user_rows : Model -> Html Msg
 user_rows model =
-  div []
-  [ user_row model 0
-  , user_row model 1
-  , user_row model 2
-  , user_row model 3
-  , user_row model 4
-  , user_row model 5
-  , user_row model 6
-  , user_row model 7
-  , user_row model 8
-  , user_row model 9
-  , user_row model 10
-  , user_row model 11
-  , user_row model 12
-  , user_row model 13
-  , user_row model 14
-  , user_row model 15
-  , user_row model 16
-  , user_row model 17
-  , user_row model 18
-  , user_row model 19
-  , user_row model 20
-  , user_row model 21
-  , user_row model 22
-  , user_row model 23
-  ]
+  div [] <| List.map (\i -> user_row model i) <| List.range 0 23
 
 error_message: Model -> Html Msg
 error_message model =
