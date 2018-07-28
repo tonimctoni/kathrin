@@ -134,6 +134,28 @@ func TestUsersFrom_file(t *testing.T){
     if err!=nil{
         panic("Could not remove temporary file")
     }
+
+    // Test the case that there is an error in the json file
+    err=ioutil.WriteFile("DELETEME.json", []byte(json+"[error]L"), 0644)
+    if err!=nil{
+        panic("Could not create temporary file")
+    }
+
+    _, err=from_file("DELETEME.json")
+    if err==nil{
+        t.Error()
+    }
+
+    err=os.Remove("DELETEME.json")
+    if err!=nil{
+        panic("Could not remove temporary file")
+    }
+
+    // Test the case that there is no json file
+    _, err=from_file("DELETEME.json")
+    if err==nil{
+        t.Error()
+    }
 }
 
 func TestUsersTo_file(t *testing.T){
@@ -257,14 +279,40 @@ func TestUsersRemove_old_entries(t *testing.T){
 func TestUsersAdd_user(t *testing.T){
     users:=new_users()
     users.users=append(users.users, User{"b", "bp", []Entry{}})
-    users.add_user("name", "password")
-
-    if len(users.users)!=2{
+    err:=users.add_user("name", "password")
+    if err!=nil{
         t.Error()
         return
     }
 
+    if len(users.users)!=2{
+        t.Error()
+    }
+
     if users.users[1].Name!="name" || users.users[1].Password!="password"{
+        t.Error()
+    }
+
+    err=users.add_user("name", "password")
+    if err==nil{
+        t.Error()
+    }
+
+    if len(users.users)!=2{
+        t.Error()
+    }
+
+    err=users.add_user("", "password")
+    if err==nil{
+        t.Error()
+    }
+
+    err=users.add_user("othername", "")
+    if err==nil{
+        t.Error()
+    }
+
+    if len(users.users)!=2{
         t.Error()
     }
 }
@@ -288,5 +336,147 @@ func TestUsersRemove_user(t *testing.T){
     if err==nil{
         t.Error()
         return
+    }
+}
+
+
+func TestUsersAdd_entry(t *testing.T){
+    users:=new_users()
+    users.add_user("name", "password")
+
+    if len(users.users[0].Entries)!=0 || len(users.entry_to_user)!=0{
+        t.Error()
+    }
+
+    if users.add_entry("gnome", Entry{2018, 7, 28, 2})==nil{
+        t.Error()
+    }
+
+    if users.add_entry("name", Entry{2018, 7, 28, 2})!=nil{
+        t.Error()
+    }
+
+    if len(users.users[0].Entries)!=1 || len(users.entry_to_user)!=1{
+        t.Error()
+    }
+
+    if users.add_entry("name", Entry{2018, 7, 28, 2})==nil{
+        t.Error()
+    }
+
+    // Test invalid entries
+    if users.add_entry("name", Entry{2018, 7, 28, -1})==nil ||
+    users.add_entry("name", Entry{2018, 7, 28, 24})==nil ||
+    users.add_entry("name", Entry{2018, 7, 32, 2})==nil ||
+    users.add_entry("name", Entry{2018, 7, 0, 2})==nil ||
+    users.add_entry("name", Entry{2018, 0, 28, 2})==nil ||
+    users.add_entry("name", Entry{2018, 13, 28, 2})==nil ||
+    users.add_entry("name", Entry{2016, 7, 28, 2})==nil{
+        t.Error()
+    }
+}
+
+func TestUsersRemove_entry(t *testing.T){
+    users:=new_users()
+    users.add_user("name", "password")
+    users.add_entry("name", Entry{2018, 7, 28, 2})
+
+    if users.remove_entry("gnome", Entry{2018, 7, 28, 2})==nil{
+        t.Error()
+    }
+
+    if users.remove_entry("name", Entry{2018, 7, 28, 3})==nil ||
+    users.remove_entry("name", Entry{2018, 7, 27, 2})==nil ||
+    users.remove_entry("name", Entry{2018, 6, 28, 2})==nil ||
+    users.remove_entry("name", Entry{2019, 7, 28, 2})==nil{
+        t.Error()
+    }
+
+    if users.remove_entry("name", Entry{2018, 7, 28, 2})!=nil{
+        t.Error()
+    }
+
+    if len(users.users[0].Entries)!=0 || len(users.entry_to_user)!=0{
+        t.Error()
+    }
+}
+
+func TestUsersRemove_all_entries(t *testing.T){
+    users:=new_users()
+    users.add_user("name", "password")
+    users.add_entry("name", Entry{2018, 7, 28, 2})
+
+    if len(users.users[0].Entries)==0 || len(users.entry_to_user)==0{
+        t.Error()
+    }
+
+    users.remove_all_entries()
+
+    if len(users.users[0].Entries)!=0 || len(users.entry_to_user)!=0{
+        t.Error()
+    }
+}
+
+func TestUsersGet_entries_on_day(t *testing.T){
+    users:=new_users()
+    users.add_user("name", "password")
+    users.add_entry("name", Entry{2018, 7, 28, 2})
+    users.add_entry("name", Entry{2018, 7, 29, 3})
+
+    for i, entry_string:=range users.get_entries_on_day(Entry{2018, 7, 28, 0}){
+        if (((entry_string=="name")!=(i==2)) || ((entry_string=="") != (i!=2))){
+            t.Error()
+        }
+    }
+
+    for _, entry_string:=range users.get_entries_on_day(Entry{2018, 7, 30, 0}){
+        if entry_string!=""{
+            t.Error()
+        }
+    }
+
+}
+
+func TestUsersGet_users_password(t *testing.T){
+    users:=new_users()
+    users.add_user("name", "password")
+
+    password, err:=users.get_users_password("gnome")
+    if password!="" || err==nil{
+        t.Error()
+    }
+
+    password, err=users.get_users_password("name")
+    if password!="password" || err!=nil{
+        t.Error()
+    }
+}
+
+func TestUsersChange_password(t *testing.T){
+    users:=new_users()
+    users.add_user("name", "password")
+
+    if users.change_password("gnome", "password", "otherpassword")==nil{
+        t.Error()
+    }
+
+    if users.change_password("name", "otherpassword", "otherpassword")==nil{
+        t.Error()
+    }
+
+    if users.change_password("name", "password", "")==nil{
+        t.Error()
+    }
+
+    if users.users[0].Password!="password"{
+        t.Error()
+    }
+
+    if users.change_password("name", "password", "otherpassword")!=nil{
+        t.Error()
+    }
+
+    if users.users[0].Password!="otherpassword"{
+        t.Error()
     }
 }

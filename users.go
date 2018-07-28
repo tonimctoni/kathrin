@@ -139,6 +139,9 @@ func (u *Users) remove_old_entries(){
 }
 
 func (u *Users) add_user(name, password string) error{
+    if name=="" || password==""{
+        return errors.New("Neither name nor password can be empty strings")
+    }
     u.lock.Lock()
     defer u.lock.Unlock()
 
@@ -240,6 +243,8 @@ func (u *Users) remove_all_entries(){
     for i:=0; i<len(u.users); i++{
         u.users[i].Entries=[]Entry{}
     }
+
+    u.entry_to_user=make(map[Entry]string)
 }
 
 func (u *Users) get_entries_on_day(entry_day Entry) [24]string{
@@ -269,6 +274,9 @@ func (u *Users) get_users_password(user string) (string, error){
 }
 
 func (u *Users) change_password(user, password, new_password string) error{
+    if new_password==""{
+        return errors.New("New password cannot be an empty string")
+    }
     u.lock.Lock()
     defer u.lock.Unlock()
 
